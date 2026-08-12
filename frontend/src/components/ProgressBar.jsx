@@ -7,7 +7,7 @@ function ProgressBar({ value = 0, color = '#0f639d', height = 'h-1.5', showLabel
       <div className={`w-full bg-surface-container-high rounded-full ${height}`}>
         <div className={`${height} rounded-full`} style={{ width: `${safe}%`, backgroundColor: color }} />
       </div>
-      {showLabel && <span className="text-sm font-medium text-on-surface">{safe}%</span>}
+      {showLabel && <span className="text-sm font-medium text-[#0f639d]">{safe}%</span>}
     </div>
   )
 }

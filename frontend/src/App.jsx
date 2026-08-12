@@ -7,6 +7,7 @@ import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Users from './pages/Users'
 import Companies from './pages/Companies'
+import Perfil from './pages/Perfil'
 
 function RequireAuth({ children }) {
   const { user, loading } = useAuth()
@@ -42,6 +43,14 @@ function App() {
               }
             >
               <Route index element={<ErrorBoundary><Dashboard /></ErrorBoundary>} />
+              <Route
+                path="perfil"
+                element={
+                  <ErrorBoundary>
+                    <Perfil />
+                  </ErrorBoundary>
+                }
+              />
               <Route
                 path="users"
                 element={

@@ -7,13 +7,6 @@ import ItemFormModal from '../components/ItemFormModal'
 import ConfirmDialog from '../components/ConfirmDialog'
 import { useToast } from '../components/Toast'
 
-const EIXO_THEMES = [
-  { bg: '#0f639d', icon: 'health_and_safety' },
-  { bg: '#4f378a', icon: 'payments' },
-  { bg: '#63597c', icon: 'flag' },
-  { bg: '#765b00', icon: 'campaign' },
-]
-
 function SelectFilter({ value, onChange, options, placeholder }) {
   return (
     <div className="relative">
@@ -57,7 +50,7 @@ const ActionRow = memo(function ActionRow({ action, canEdit, isAdmin, onForm, on
             <div className="w-full bg-surface-container-high rounded-full h-1.5">
               <div className="bg-[#0f639d] h-1.5 rounded-full" style={{ width: `${action.progress}%` }} />
             </div>
-            <span className="text-sm font-medium text-on-surface">{action.progress}%</span>
+            <span className="text-sm font-medium text-[#0f639d]">{action.progress}%</span>
           </div>
         </td>
         <td className="p-4 align-middle w-48">
@@ -293,9 +286,8 @@ const ObjectiveBlock = memo(function ObjectiveBlock({ objective, objIndex, canEd
   )
 })
 
-const AxisBlock = memo(function AxisBlock({ axis, axisIndex, canEdit, isAdmin, expanded, onToggle, onForm, onDelete, onToggleInitiative, togglingId }) {
+const AxisBlock = memo(function AxisBlock({ axis, canEdit, isAdmin, expanded, onToggle, onForm, onDelete, onToggleInitiative, togglingId }) {
   const axisOpen = expanded.has(`axis-${axis.id}`)
-  const theme = EIXO_THEMES[axisIndex % EIXO_THEMES.length]
   const axisProgress =
     axis.objectives.length > 0
       ? Math.round(
@@ -319,7 +311,7 @@ const AxisBlock = memo(function AxisBlock({ axis, axisIndex, canEdit, isAdmin, e
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="font-title-md text-title-md font-bold" style={{ color: theme.bg }}>
+          <span className="font-title-md text-title-md font-bold text-[#0f639d]">
             {axisProgress}%
           </span>
           <div className="flex items-center gap-1 ml-2">
@@ -592,11 +584,10 @@ export default function Dashboard() {
       )}
 
       <div className="flex flex-col gap-gutter">
-        {data?.axes?.map((axis, axisIndex) => (
+        {data?.axes?.map((axis) => (
           <AxisBlock
             key={axis.id}
             axis={axis}
-            axisIndex={axisIndex}
             canEdit={canEdit}
             isAdmin={isAdmin}
             expanded={expanded}

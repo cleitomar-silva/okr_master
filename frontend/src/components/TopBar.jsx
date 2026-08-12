@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../api'
 
@@ -14,6 +15,7 @@ function Avatar({ name, size = 'w-8 h-8' }) {
 
 export default function TopBar({ onMenu }) {
   const { user, company, selectCompany, logout } = useAuth()
+  const navigate = useNavigate()
   const [companies, setCompanies] = useState([])
   const [companyOpen, setCompanyOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -35,7 +37,10 @@ export default function TopBar({ onMenu }) {
   const current = companies.find((c) => c.id === company) || user?.companies?.find((c) => c.id === company)
 
   return (
-    <header className="bg-[#0f639d] flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop h-16 shrink-0 z-50">
+    <header
+      className="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop h-16 shrink-0 z-50"
+      style={{ backgroundColor: current?.color || '#0f639d' }}
+    >
       <button
         onClick={onMenu}
         className="text-on-primary hover:bg-black/10 transition-colors duration-200 p-2 rounded-full flex items-center justify-center md:hidden"
@@ -84,10 +89,6 @@ export default function TopBar({ onMenu }) {
       <div className="flex items-center gap-4 ml-auto relative" ref={menuRef}>
         <button onClick={() => setMenuOpen((v) => !v)} className="flex items-center gap-2 group">
           <Avatar name={user?.name} />
-          <span className="hidden md:block text-sm font-medium text-on-primary">{user?.name}</span>
-          <span className="material-symbols-outlined text-base text-on-primary/80 group-hover:text-on-primary transition-colors hidden md:block">
-            expand_more
-          </span>
         </button>
         {menuOpen && (
           <div className="absolute right-0 top-full mt-2 min-w-[220px] bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg p-2 z-50">
@@ -95,6 +96,16 @@ export default function TopBar({ onMenu }) {
               <span className="block text-sm font-semibold text-on-surface">{user?.name}</span>
               <span className="block text-xs text-on-surface-variant">{user?.email}</span>
             </div>
+            <button
+              onClick={() => {
+                setMenuOpen(false)
+                navigate('/perfil')
+              }}
+              className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-on-surface hover:bg-surface-container-high transition-colors"
+            >
+              <span className="material-symbols-outlined text-base">person</span>
+              Perfil
+            </button>
             <button
               onClick={async () => {
                 setMenuOpen(false)
