@@ -37,7 +37,7 @@ export default {
         'secondary-fixed-dim': '#cdc0e9',
         'on-surface-variant': '#494551',
         'primary-fixed-dim': '#cfbcff',
-        background: '#f8f9ff',
+        background: '#f8fafb',
         'on-error-container': '#93000a',
         'secondary-container': '#e1d4fd',
         'inverse-on-surface': '#eaf1ff',
@@ -76,7 +76,7 @@ export default {
       fontSize: {
         'headline-lg': ['32px', { lineHeight: '40px', letterSpacing: '-0.01em', fontWeight: '600' }],
         'body-md': ['16px', { lineHeight: '24px', fontWeight: '400' }],
-        'display-lg': ['48px', { lineHeight: '56px', letterSpacing: '-0.02em', fontWeight: '700' }],
+        'display-lg': ['35px', { lineHeight: '43px', letterSpacing: '-0.02em', fontWeight: '700' }],
         'title-md': ['20px', { lineHeight: '28px', fontWeight: '600' }],
         'headline-lg-mobile': ['24px', { lineHeight: '32px', fontWeight: '600' }],
         'label-sm': ['12px', { lineHeight: '16px', letterSpacing: '0.05em', fontWeight: '500' }],

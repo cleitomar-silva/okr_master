@@ -16,7 +16,7 @@ class ActionController extends Controller
         $request->validate(['objective_id' => 'required|integer|exists:objectives,id']);
         $this->assertCompanyAccess($request, $this->companyOfObjective($request->integer('objective_id')));
 
-        $actions = Action::with('users:id,name','initiatives:id,action_id,name,completed')
+        $actions = Action::with('users:id,name', 'initiatives:id,action_id,name,completed')
             ->where('objective_id', $request->integer('objective_id'))
             ->orderBy('name')
             ->get()
@@ -41,7 +41,7 @@ class ActionController extends Controller
         $action = Action::create($validated);
         $action->users()->sync($validated['user_ids'] ?? []);
 
-        return response()->json(['status' => 'ok', 'data' => ['action' => $this->serialize($action->fresh('users:id,name','initiatives'))]]);
+        return response()->json(['status' => 'ok', 'data' => ['action' => $this->serialize($action->fresh('users:id,name', 'initiatives'))]]);
     }
 
     public function update(Request $request, Action $action): JsonResponse
@@ -58,7 +58,7 @@ class ActionController extends Controller
         $action->update($validated);
         $action->users()->sync($validated['user_ids']);
 
-        return response()->json(['status' => 'ok', 'data' => ['action' => $this->serialize($action->fresh('users:id,name','initiatives'))]]);
+        return response()->json(['status' => 'ok', 'data' => ['action' => $this->serialize($action->fresh('users:id,name', 'initiatives'))]]);
     }
 
     public function destroy(Request $request, Action $action): JsonResponse

@@ -6,6 +6,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Users from './pages/Users'
+import UserForm from './pages/UserForm'
 import Companies from './pages/Companies'
 import Perfil from './pages/Perfil'
 
@@ -13,7 +14,7 @@ function RequireAuth({ children }) {
   const { user, loading } = useAuth()
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-background">
+      <div className="h-screen flex items-center justify-center bg-[#f8fafb]">
         <span className="material-symbols-outlined animate-spin text-4xl text-[#0f639d]">progress_activity</span>
       </div>
     )
@@ -57,6 +58,26 @@ function App() {
                   <RequireAdmin>
                     <ErrorBoundary>
                       <Users />
+                    </ErrorBoundary>
+                  </RequireAdmin>
+                }
+              />
+              <Route
+                path="users/novo"
+                element={
+                  <RequireAdmin>
+                    <ErrorBoundary>
+                      <UserForm />
+                    </ErrorBoundary>
+                  </RequireAdmin>
+                }
+              />
+              <Route
+                path="users/:id/editar"
+                element={
+                  <RequireAdmin>
+                    <ErrorBoundary>
+                      <UserForm />
                     </ErrorBoundary>
                   </RequireAdmin>
                 }

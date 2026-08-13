@@ -13,10 +13,20 @@ class UserController extends Controller
     {
         $this->authorizeAdmin($request);
 
-        $users = User::with('companies:id,name')->orderBy('name')->get()
+        $users = User::with('companies:id,name,color')->orderBy('name')->get()
             ->map(fn (User $u) => $this->serialize($u));
 
         return response()->json(['status' => 'ok', 'data' => ['users' => $users]]);
+    }
+
+    public function show(Request $request, User $user): JsonResponse
+    {
+        $this->authorizeAdmin($request);
+
+        return response()->json([
+            'status' => 'ok',
+            'data' => ['user' => $this->serialize($user)],
+        ]);
     }
 
     public function store(Request $request): JsonResponse
@@ -28,12 +38,13 @@ class UserController extends Controller
             'email' => 'required|email|max:255|unique:users,email',
             'permission' => 'required|in:admin,gestor,colaborador',
             'password' => 'required|string|min:6',
-            'company_ids' => 'array',
+            'company_ids' => 'required|array|min:1',
             'company_ids.*' => 'integer|exists:companies,id',
+            'active' => 'sometimes|boolean',
         ]);
 
         $user = User::create($validated);
-        $user->companies()->sync($validated['company_ids'] ?? []);
+        $user->companies()->sync($validated['company_ids']);
 
         return response()->json(['status' => 'ok', 'data' => ['user' => $this->serialize($user->fresh())]]);
     }
@@ -44,12 +55,20 @@ class UserController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|max:255|unique:users,email,' . $user->id,
+            'email' => 'sometimes|email|max:255|unique:users,email,'.$user->id,
             'permission' => 'sometimes|in:admin,gestor,colaborador',
             'password' => 'sometimes|nullable|string|min:6',
-            'company_ids' => 'array',
+            'company_ids' => 'sometimes|array|min:1',
             'company_ids.*' => 'integer|exists:companies,id',
+            'active' => 'sometimes|boolean',
         ]);
+
+        if (array_key_exists('active', $validated) && ! $validated['active'] && $user->id === $request->user()->id) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Você não pode desativar o próprio usuário.',
+            ], 422);
+        }
 
         if (empty($validated['password'])) {
             unset($validated['password']);
@@ -61,7 +80,7 @@ class UserController extends Controller
             $user->companies()->sync($validated['company_ids']);
         }
 
-        return response()->json(['status' => 'ok', 'data' => ['user' => $this->serialize($user->fresh('companies:id,name'))]]);
+        return response()->json(['status' => 'ok', 'data' => ['user' => $this->serialize($user->fresh('companies:id,name,color'))]]);
     }
 
     public function destroy(Request $request, User $user): JsonResponse
@@ -108,6 +127,7 @@ class UserController extends Controller
             'name' => $user->name,
             'email' => $user->email,
             'permission' => $user->permission,
+            'active' => (bool) $user->active,
             'companies' => $user->companies,
         ];
     }

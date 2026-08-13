@@ -50,7 +50,7 @@ class CompanyController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
-            'cnpj' => 'sometimes|string|max:20|unique:companies,cnpj,' . $company->id,
+            'cnpj' => 'sometimes|string|max:20|unique:companies,cnpj,'.$company->id,
             'color' => 'sometimes|string|max:9',
         ]);
 

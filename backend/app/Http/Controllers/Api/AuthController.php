@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Company;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -27,6 +26,13 @@ class AuthController extends Controller
             ], 401);
         }
 
+        if (! $user->isActive()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Usuário desativado. Contate o administrador.',
+            ], 403);
+        }
+
         $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([
@@ -35,6 +41,22 @@ class AuthController extends Controller
                 'token' => $token,
                 'user' => $this->serializeUser($user),
             ],
+        ]);
+    }
+
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,'.$request->user()->id,
+        ]);
+
+        $user = $request->user();
+        $user->update($validated);
+
+        return response()->json([
+            'status' => 'ok',
+            'data' => ['user' => $this->serializeUser($user)],
         ]);
     }
 
@@ -57,14 +79,11 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
-        $query = Company::query();
-        if (! $user->isAdmin()) {
-            $query->whereIn('id', $user->companies()->pluck('companies.id'));
-        }
+        $companies = $user->companies()->orderBy('name')->get();
 
         return response()->json([
             'status' => 'ok',
-            'data' => ['companies' => $query->orderBy('name')->get()],
+            'data' => ['companies' => $companies],
         ]);
     }
 
@@ -75,6 +94,7 @@ class AuthController extends Controller
             'name' => $user->name,
             'email' => $user->email,
             'permission' => $user->permission,
+            'active' => (bool) $user->active,
             'companies' => $user->companies()->orderBy('name')->get(),
         ];
     }

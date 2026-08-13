@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import api from '../api'
 import Modal from './Modal'
 import { useToast } from './Toast'
+import { downloadAttachment, formatSize, openAttachmentInTab } from './AttachmentPopover'
 
 const CONFIGS = {
   eixo: {
@@ -27,6 +28,7 @@ const CONFIGS = {
     parentField: 'objective_id',
     api: '/actions',
     icon: 'task_alt',
+    responseKey: 'action',
   },
   iniciativa: {
     title: 'Iniciativa',
@@ -35,23 +37,46 @@ const CONFIGS = {
     parentField: 'action_id',
     api: '/initiatives',
     icon: 'check_circle',
+    responseKey: 'initiative',
   },
 }
+
+const ACCEPTED_MIME = [
+  'application/pdf',
+  'image/png',
+  'image/jpeg',
+  'image/gif',
+  'image/webp',
+  'image/bmp',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/csv',
+  'application/csv',
+]
+const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 export default function ItemFormModal({ type, open, companyId, parentId, item, onClose, onSaved }) {
   const { toast } = useToast()
   const cfg = CONFIGS[type]
+  const canAttach = type === 'acao' || type === 'iniciativa'
   const [name, setName] = useState(item?.name || '')
   const [users, setUsers] = useState([])
   const [available, setAvailable] = useState([])
   const [loading, setLoading] = useState(false)
   const [loadingUsers, setLoadingUsers] = useState(false)
   const [userError, setUserError] = useState('')
+  const [attachments, setAttachments] = useState([])
+  const [pendingFiles, setPendingFiles] = useState([])
+  const [attachmentsError, setAttachmentsError] = useState('')
+  const [busy, setBusy] = useState(null)
 
   useEffect(() => {
     if (!open) return
     setName(item?.name || '')
     setUsers(item?.users?.map((u) => u.id) || [])
+    setAttachments(item?.attachments || [])
+    setPendingFiles([])
+    setAttachmentsError('')
     if (cfg.fields.includes('users')) {
       setLoadingUsers(true)
       setAvailable([])
@@ -69,6 +94,62 @@ export default function ItemFormModal({ type, open, companyId, parentId, item, o
     setUsers((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
   }
 
+  const onFilesChange = (e) => {
+    const files = Array.from(e.target.files || [])
+    e.target.value = ''
+    if (files.length === 0) return
+    const invalid = files.filter((f) => !ACCEPTED_MIME.includes(f.type) || f.size > MAX_FILE_SIZE)
+    if (invalid.length > 0) {
+      setAttachmentsError('Apenas arquivos PDF, imagens e planilhas, com no máximo 10MB cada.')
+      return
+    }
+    setAttachmentsError('')
+    setPendingFiles((prev) => [...prev, ...files])
+  }
+
+  const removePending = (index) => {
+    setPendingFiles((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const openInTab = async (att) => {
+    if (busy) return
+    setBusy({ id: att.id, action: 'tab' })
+    try {
+      await openAttachmentInTab(att, toast)
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const downloadAttachmentRow = async (att) => {
+    if (busy) return
+    setBusy({ id: att.id, action: 'download' })
+    try {
+      await downloadAttachment(att, toast)
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const removeAttachment = async (att) => {
+    try {
+      await api.delete(`/attachments/${att.id}`)
+      setAttachments((prev) => prev.filter((a) => a.id !== att.id))
+      toast('Anexo removido.')
+    } catch (err) {
+      toast(err.response?.data?.message || 'Erro ao remover o anexo.', 'error')
+    }
+  }
+
+  const uploadPending = async (targetId) => {
+    if (pendingFiles.length === 0) return
+    const formData = new FormData()
+    formData.append('attachable_type', type === 'acao' ? 'action' : 'initiative')
+    formData.append('attachable_id', targetId)
+    pendingFiles.forEach((f) => formData.append('files[]', f))
+    await api.post('/attachments', formData)
+  }
+
   const submit = async (e) => {
     e.preventDefault()
     if (!name.trim()) return
@@ -84,7 +165,11 @@ export default function ItemFormModal({ type, open, companyId, parentId, item, o
     try {
       const url = item ? `${cfg.api}/${item.id}` : cfg.api
       const method = item ? 'put' : 'post'
-      await api[method](url, payload)
+      const res = await api[method](url, payload)
+      const savedId = item ? item.id : res.data?.data?.[cfg.responseKey]?.id
+      if (canAttach && pendingFiles.length > 0 && savedId) {
+        await uploadPending(savedId)
+      }
       toast(item ? `${cfg.title} atualizado com sucesso.` : `${cfg.title} criado com sucesso.`)
       onSaved()
       onClose()
@@ -158,6 +243,100 @@ export default function ItemFormModal({ type, open, companyId, parentId, item, o
               </p>
             )}
             {userError && <p className="text-error text-xs mt-2">{userError}</p>}
+          </div>
+        )}
+
+        {canAttach && (
+          <div className="flex flex-col gap-3">
+            <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+              Anexos
+              <span className="text-xs font-normal normal-case text-on-surface-variant ml-1">
+                (PDF, imagens e planilhas — máx. 10MB por arquivo)
+              </span>
+            </span>
+            <label className="flex items-center justify-center gap-2 px-4 py-6 rounded-lg border border-dashed border-outline-variant text-on-surface-variant hover:bg-surface-container-low cursor-pointer transition-colors">
+              <input
+                type="file"
+                multiple
+                accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.bmp,.xls,.xlsx,.csv"
+                className="hidden"
+                onChange={onFilesChange}
+              />
+              <span className="material-symbols-outlined text-[20px]">attach_file</span>
+              <span className="text-sm">Selecionar arquivos</span>
+            </label>
+            {attachmentsError && <p className="text-error text-xs">{attachmentsError}</p>}
+            {pendingFiles.length > 0 && (
+              <ul className="flex flex-col gap-2">
+                {pendingFiles.map((f, i) => (
+                  <li
+                    key={`${f.name}-${i}`}
+                    className="flex items-center gap-2 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2"
+                  >
+                    <span className="material-symbols-outlined text-[20px] text-on-surface-variant">description</span>
+                    <span className="flex-1 min-w-0 text-sm text-on-surface truncate">{f.name}</span>
+                    <span className="text-xs text-on-surface-variant shrink-0">{formatSize(f.size)}</span>
+                    <button
+                      type="button"
+                      onClick={() => removePending(i)}
+                      className="p-1 rounded-lg text-on-surface-variant hover:text-error transition-colors"
+                      title="Remover"
+                    >
+                      <span className="material-symbols-outlined text-[20px]">close</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {attachments.length > 0 && (
+              <ul className="flex flex-col gap-2">
+                {attachments.map((att) => (
+                  <li
+                    key={att.id}
+                    className="flex items-center gap-2 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2"
+                  >
+                    {busy?.id === att.id && busy.action === 'tab' ? (
+                      <span className="material-symbols-outlined animate-spin text-[20px] text-[#0f639d]">
+                        progress_activity
+                      </span>
+                    ) : (
+                      <span className="material-symbols-outlined text-[20px] text-[#0f639d]">attach_file</span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => openInTab(att)}
+                      className="flex-1 min-w-0 text-sm text-on-surface truncate text-left hover:underline"
+                      title="Abrir em nova aba"
+                    >
+                      {att.name}
+                    </button>
+                    <span className="text-xs text-on-surface-variant shrink-0">{formatSize(att.size)}</span>
+                    <button
+                      type="button"
+                      onClick={() => downloadAttachmentRow(att)}
+                      className="p-1 rounded-lg text-on-surface-variant hover:text-[#0f639d] transition-colors"
+                      title="Baixar"
+                    >
+                      {busy?.id === att.id && busy.action === 'download' ? (
+                        <span className="material-symbols-outlined animate-spin text-[20px] text-[#0f639d]">
+                          progress_activity
+                        </span>
+                      ) : (
+                        <span className="material-symbols-outlined text-[20px]">file_download</span>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeAttachment(att)}
+                      className="p-1 rounded-lg text-on-surface-variant hover:text-error transition-colors"
+                      title="Excluir"
+                    >
+                      <span className="material-symbols-outlined text-[20px]">delete</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
 

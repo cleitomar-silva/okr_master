@@ -17,7 +17,7 @@ export default class ErrorBoundary extends Component {
   render() {
     if (this.state.error) {
       return (
-        <div className="h-screen flex items-center justify-center bg-background px-4">
+        <div className="h-screen flex items-center justify-center bg-[#f8fafb] px-4">
           <div className="max-w-xl w-full bg-surface-container-lowest border border-error/40 rounded-xl p-8">
             <div className="flex items-center gap-3 mb-4">
               <span className="material-symbols-outlined text-error text-3xl">error</span>

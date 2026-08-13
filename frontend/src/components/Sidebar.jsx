@@ -8,12 +8,12 @@ function Item({ to, icon, label, end, collapsed }) {
       end={end}
       title={collapsed ? label : undefined}
       className={({ isActive }) =>
-        `flex items-center gap-3 px-4 py-3 rounded-full transition-colors ${
+        `flex items-center gap-3 px-4 py-3 transition-colors border-l-[4px] ${
           collapsed ? 'justify-center px-0' : ''
         } ${
           isActive
-            ? 'bg-gray-200 text-on-surface font-bold'
-            : 'text-on-surface-variant hover:bg-surface-container-high'
+            ? 'bg-[#e6e8e9] border-[#001d2d] text-on-surface font-bold'
+            : 'border-transparent text-on-surface-variant hover:bg-surface-container-high'
         }`
       }
     >
@@ -31,7 +31,7 @@ function Menu({ collapsed, onToggle, onClose }) {
 
   return (
     <div
-      className={`flex flex-col h-full bg-surface-container-low flex-shrink-0 border-r border-outline-variant transition-[width] duration-300 ${
+      className={`flex flex-col h-full bg-[#f8fafb] flex-shrink-0 border-r border-outline-variant transition-[width] duration-300 ${
         collapsed ? 'w-[72px]' : 'w-[280px]'
       }`}
     >
@@ -50,7 +50,7 @@ function Menu({ collapsed, onToggle, onClose }) {
         )}
         <button
           onClick={onToggle}
-          className="p-2 rounded-full hover:bg-surface-container-high text-on-surface-variant"
+          className="p-2 rounded-lg hover:bg-surface-container-high text-on-surface-variant"
           title={collapsed ? 'Expandir menu' : 'Retrair menu'}
         >
           <span className="material-symbols-outlined">menu</span>
@@ -58,7 +58,7 @@ function Menu({ collapsed, onToggle, onClose }) {
         {!collapsed && (
           <button
             onClick={onClose}
-            className="md:hidden p-2 rounded-full hover:bg-surface-container-high text-on-surface-variant"
+            className="md:hidden p-2 rounded-lg hover:bg-surface-container-high text-on-surface-variant"
           >
             <span className="material-symbols-outlined">close</span>
           </button>

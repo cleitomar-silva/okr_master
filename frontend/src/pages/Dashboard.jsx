@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import UsersBadge from '../components/UsersBadge'
 import EmptyState from '../components/EmptyState'
 import ItemFormModal from '../components/ItemFormModal'
+import AttachmentPopover from '../components/AttachmentPopover'
 import ConfirmDialog from '../components/ConfirmDialog'
 import { useToast } from '../components/Toast'
 
@@ -22,7 +23,7 @@ function SelectFilter({ value, onChange, options, placeholder }) {
           </option>
         ))}
       </select>
-      <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-sm pointer-events-none">
+      <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-[20px] pointer-events-none">
         expand_more
       </span>
     </div>
@@ -43,6 +44,9 @@ const ActionRow = memo(function ActionRow({ action, canEdit, isAdmin, onForm, on
               <span className={`w-2 h-2 rounded-full ${done ? 'bg-green-500' : 'bg-blue-500'}`} />
               {done ? 'Concluído' : 'Em andamento'}
             </span>
+            {action.attachments?.length > 0 && (
+              <AttachmentPopover attachments={action.attachments} className="mt-1.5 w-fit" />
+            )}
           </div>
         </td>
         <td className="p-4 align-middle w-40">
@@ -60,18 +64,18 @@ const ActionRow = memo(function ActionRow({ action, canEdit, isAdmin, onForm, on
           <div className="flex items-center justify-end gap-1">
             <button
               onClick={() => onForm('iniciativa', action.id, null)}
-              className="p-1 hover:bg-surface-container-high rounded-full text-on-surface-variant transition-colors"
+              className="p-1 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-colors"
               title="Cadastrar Iniciativa"
             >
-              <span className="material-symbols-outlined text-sm">add</span>
+              <span className="material-symbols-outlined text-[20px]">add</span>
             </button>
             {canEdit && (
               <button
-                onClick={() => onForm('acao', null, { id: action.id, name: action.name, users: action.users })}
-                className="p-1 hover:bg-surface-container-high rounded-full text-on-surface-variant transition-colors"
+                onClick={() => onForm('acao', null, { id: action.id, name: action.name, users: action.users, attachments: action.attachments })}
+                className="p-1 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-colors"
                 title="Editar Ação"
               >
-                <span className="material-symbols-outlined text-sm">edit</span>
+                <span className="material-symbols-outlined text-[20px]">edit</span>
               </button>
             )}
             {isAdmin && (
@@ -79,18 +83,18 @@ const ActionRow = memo(function ActionRow({ action, canEdit, isAdmin, onForm, on
                 onClick={() =>
                   onDelete('acao', { id: action.id, name: action.name }, `Esta Ação possui ${action.initiatives?.length || 0} Iniciativa(s).`)
                 }
-                className="p-1 hover:bg-error-container rounded-full text-on-surface-variant hover:text-error transition-colors"
+                className="p-1 hover:bg-error-container rounded-lg text-on-surface-variant hover:text-error transition-colors"
                 title="Excluir Ação"
               >
-                <span className="material-symbols-outlined text-sm">delete</span>
+                <span className="material-symbols-outlined text-[20px]">delete</span>
               </button>
             )}
             <button
               onClick={() => setInitiativesOpen((v) => !v)}
-              className="p-1 hover:bg-surface-container-high rounded-full text-on-surface-variant transition-colors"
+              className="p-1 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-colors"
               title="Ver iniciativas"
             >
-              <span className={`material-symbols-outlined transition-transform ${initiativesOpen ? 'rotate-180' : ''}`}>
+              <span className={`material-symbols-outlined text-[20px] transition-transform ${initiativesOpen ? 'rotate-180' : ''}`}>
                 expand_more
               </span>
             </button>
@@ -128,10 +132,10 @@ const ActionRow = memo(function ActionRow({ action, canEdit, isAdmin, onForm, on
                     title={initiative.completed ? 'Marcar como pendente' : 'Marcar como concluída'}
                   >
                     {togglingId === initiative.id ? (
-                      <span className="material-symbols-outlined animate-spin text-lg text-[#0f639d]">progress_activity</span>
+                      <span className="material-symbols-outlined animate-spin text-[20px] text-[#0f639d]">progress_activity</span>
                     ) : (
                       <span
-                        className={`material-symbols-outlined text-lg ${initiative.completed ? 'text-[#0f639d]' : 'text-on-surface-variant'}`}
+                        className={`material-symbols-outlined text-[20px] ${initiative.completed ? 'text-[#0f639d]' : 'text-on-surface-variant'}`}
                         data-weight={initiative.completed ? 'fill' : undefined}
                       >
                         {initiative.completed ? 'check_circle' : 'radio_button_unchecked'}
@@ -141,23 +145,24 @@ const ActionRow = memo(function ActionRow({ action, canEdit, isAdmin, onForm, on
                       {initiative.name}
                     </span>
                   </button>
+                  <AttachmentPopover attachments={initiative.attachments} />
                   <UsersBadge users={initiative.users} />
                   {canEdit && (
                     <button
-                      onClick={() => onForm('iniciativa', null, { id: initiative.id, name: initiative.name, users: initiative.users })}
-                      className="p-1 hover:bg-surface-container-high rounded-full text-on-surface-variant transition-colors"
+                      onClick={() => onForm('iniciativa', null, { id: initiative.id, name: initiative.name, users: initiative.users, attachments: initiative.attachments })}
+                      className="p-1 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-colors"
                       title="Editar Iniciativa"
                     >
-                      <span className="material-symbols-outlined text-sm">edit</span>
+                      <span className="material-symbols-outlined text-[20px]">edit</span>
                     </button>
                   )}
                   {isAdmin && (
                     <button
                       onClick={() => onDelete('iniciativa', { id: initiative.id, name: initiative.name })}
-                      className="p-1 hover:bg-error-container rounded-full text-on-surface-variant hover:text-error transition-colors"
+                      className="p-1 hover:bg-error-container rounded-lg text-on-surface-variant hover:text-error transition-colors"
                       title="Excluir Iniciativa"
                     >
-                      <span className="material-symbols-outlined text-sm">delete</span>
+                      <span className="material-symbols-outlined text-[20px]">delete</span>
                     </button>
                   )}
                 </li>
@@ -178,7 +183,7 @@ const ObjectiveBlock = memo(function ObjectiveBlock({ objective, objIndex, canEd
 
   return (
     <div className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
-      <div className="bg-surface border-b border-outline-variant p-5 sm:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="bg-surface p-5 sm:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
             <span className="bg-[#0f639d] text-on-primary font-label-sm text-label-sm px-2 py-1 rounded">
@@ -191,18 +196,18 @@ const ObjectiveBlock = memo(function ObjectiveBlock({ objective, objIndex, canEd
           <div className="flex justify-end gap-2 mb-2">
             <button
               onClick={() => onForm('acao', objective.id, null)}
-              className="p-1.5 hover:bg-surface-container-high rounded-full text-on-surface-variant transition-colors"
+              className="p-1.5 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-colors"
               title="Cadastrar Ação"
             >
-              <span className="material-symbols-outlined text-sm">add</span>
+              <span className="material-symbols-outlined text-[20px]">add</span>
             </button>
             {canEdit && (
               <button
                 onClick={() => onForm('objetivo', null, { id: objective.id, name: objective.name })}
-                className="p-1.5 hover:bg-surface-container-high rounded-full text-on-surface-variant transition-colors"
+                className="p-1.5 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-colors"
                 title="Editar Objetivo"
               >
-                <span className="material-symbols-outlined text-sm">edit</span>
+                <span className="material-symbols-outlined text-[20px]">edit</span>
               </button>
             )}
             {isAdmin && (
@@ -210,18 +215,18 @@ const ObjectiveBlock = memo(function ObjectiveBlock({ objective, objIndex, canEd
                 onClick={() =>
                   onDelete('objetivo', { id: objective.id, name: objective.name }, `Este Objetivo possui ${objective.actions.length} Ação(ões).`)
                 }
-                className="p-1.5 hover:bg-error-container rounded-full text-on-surface-variant hover:text-error transition-colors"
+                className="p-1.5 hover:bg-error-container rounded-lg text-on-surface-variant hover:text-error transition-colors"
                 title="Excluir Objetivo"
               >
-                <span className="material-symbols-outlined text-sm">delete</span>
+                <span className="material-symbols-outlined text-[20px]">delete</span>
               </button>
             )}
             <button
               onClick={() => onToggle(`obj-${objective.id}`)}
-              className="p-1.5 hover:bg-surface-container-high rounded-full text-on-surface-variant transition-colors"
+              className="p-1.5 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-colors"
               title={objOpen ? 'Recolher' : 'Expandir'}
             >
-              <span className={`material-symbols-outlined text-sm transition-transform ${objOpen ? '' : '-rotate-90'}`}>
+              <span className={`material-symbols-outlined text-[20px] transition-transform ${objOpen ? '' : '-rotate-90'}`}>
                 expand_less
               </span>
             </button>
@@ -245,9 +250,9 @@ const ObjectiveBlock = memo(function ObjectiveBlock({ objective, objIndex, canEd
             action={
               <button
                 onClick={() => onForm('acao', objective.id, null)}
-                className="mt-2 px-4 py-2 rounded-full bg-[#0f639d] text-on-primary text-sm font-medium hover:bg-[#0c5182] transition-colors flex items-center gap-2"
+                className="mt-2 px-4 py-2 rounded-lg bg-[#0f639d] text-on-primary text-sm font-medium hover:bg-[#0c5182] transition-colors flex items-center gap-2"
               >
-                <span className="material-symbols-outlined text-sm">add</span> Cadastrar Ação
+                <span className="material-symbols-outlined text-[20px]">add</span> Cadastrar Ação
               </button>
             }
           />
@@ -317,18 +322,18 @@ const AxisBlock = memo(function AxisBlock({ axis, canEdit, isAdmin, expanded, on
           <div className="flex items-center gap-1 ml-2">
             <button
               onClick={() => onForm('objetivo', axis.id, null)}
-              className="p-2 hover:bg-surface-container-high rounded-full transition-colors text-on-surface-variant"
+              className="p-2 hover:bg-surface-container-high rounded-lg transition-colors text-on-surface-variant"
               title="Cadastrar Objetivo"
             >
-              <span className="material-symbols-outlined">add</span>
+              <span className="material-symbols-outlined text-[20px]">add</span>
             </button>
             {canEdit && (
               <button
                 onClick={() => onForm('eixo', null, { id: axis.id, name: axis.name })}
-                className="p-2 hover:bg-surface-container-high rounded-full transition-colors text-on-surface-variant"
+                className="p-2 hover:bg-surface-container-high rounded-lg transition-colors text-on-surface-variant"
                 title="Editar Eixo"
               >
-                <span className="material-symbols-outlined">edit</span>
+                <span className="material-symbols-outlined text-[20px]">edit</span>
               </button>
             )}
             {isAdmin && (
@@ -336,18 +341,18 @@ const AxisBlock = memo(function AxisBlock({ axis, canEdit, isAdmin, expanded, on
                 onClick={() =>
                   onDelete('eixo', { id: axis.id, name: axis.name }, `Este Eixo possui ${axis.objectives.length} Objetivo(s).`)
                 }
-                className="p-2 hover:bg-error-container rounded-full transition-colors text-on-surface-variant hover:text-error"
+                className="p-2 hover:bg-error-container rounded-lg transition-colors text-on-surface-variant hover:text-error"
                 title="Excluir Eixo"
               >
-                <span className="material-symbols-outlined">delete</span>
+                <span className="material-symbols-outlined text-[20px]">delete</span>
               </button>
             )}
             <button
               onClick={() => onToggle(`axis-${axis.id}`)}
-              className="p-2 hover:bg-surface-container-high rounded-full transition-colors text-on-surface-variant"
+              className="p-2 hover:bg-surface-container-high rounded-lg transition-colors text-on-surface-variant"
               title={axisOpen ? 'Recolher' : 'Expandir'}
             >
-              <span className={`material-symbols-outlined transition-transform ${axisOpen ? '' : '-rotate-90'}`}>
+              <span className={`material-symbols-outlined text-[20px] transition-transform ${axisOpen ? '' : '-rotate-90'}`}>
                 expand_less
               </span>
             </button>
@@ -366,9 +371,9 @@ const AxisBlock = memo(function AxisBlock({ axis, canEdit, isAdmin, expanded, on
                 action={
                   <button
                     onClick={() => onForm('objetivo', axis.id, null)}
-                    className="mt-2 px-4 py-2 rounded-full bg-[#0f639d] text-on-primary text-sm font-medium hover:bg-[#0c5182] transition-colors flex items-center gap-2"
+                    className="mt-2 px-4 py-2 rounded-lg bg-[#0f639d] text-on-primary text-sm font-medium hover:bg-[#0c5182] transition-colors flex items-center gap-2"
                   >
-                    <span className="material-symbols-outlined text-sm">add</span> Cadastrar Objetivo
+                    <span className="material-symbols-outlined text-[20px]">add</span> Cadastrar Objetivo
                   </button>
                 }
               />
@@ -555,13 +560,13 @@ export default function Dashboard() {
           />
           <button
             onClick={() => setFilters((f) => ({ ...f, mine: !f.mine }))}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
               filters.mine
                 ? 'bg-[#0f639d] text-on-primary border-[#0f639d]'
                 : 'border-[#0f639d]/30 text-[#0f639d] hover:bg-[#0f639d]/10'
             }`}
           >
-            <span className="material-symbols-outlined text-sm">person</span> Meus Itens
+            <span className="material-symbols-outlined text-[20px]">person</span> Meus Itens
           </button>
         </div>
       </div>
@@ -575,9 +580,9 @@ export default function Dashboard() {
           action={
             <button
               onClick={() => openForm('eixo', company, null)}
-              className="mt-2 px-5 py-2.5 rounded-full bg-[#0f639d] text-on-primary text-sm font-medium hover:bg-[#0c5182] transition-colors flex items-center gap-2"
+              className="mt-2 px-5 py-2.5 rounded-lg bg-[#0f639d] text-on-primary text-sm font-medium hover:bg-[#0c5182] transition-colors flex items-center gap-2"
             >
-              <span className="material-symbols-outlined text-sm">add</span> Cadastrar Eixo
+              <span className="material-symbols-outlined text-[20px]">add</span> Cadastrar Eixo
             </button>
           }
         />
@@ -635,7 +640,7 @@ export default function Dashboard() {
 
       <button
         onClick={() => openForm('eixo', company, null)}
-        className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-[#0f639d] text-on-primary shadow-lg shadow-[#0f639d]/30 hover:bg-[#0c5182] hover:scale-105 transition-all flex items-center justify-center"
+        className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-lg bg-[#0f639d] text-on-primary shadow-lg shadow-[#0f639d]/30 hover:bg-[#0c5182] hover:scale-105 transition-all flex items-center justify-center"
         title="Cadastrar Eixo"
       >
         <span className="material-symbols-outlined text-2xl">add</span>

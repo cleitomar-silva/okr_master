@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import api from '../api'
 import { useAuth } from '../context/AuthContext'
-import Modal from '../components/Modal'
 import ConfirmDialog from '../components/ConfirmDialog'
 import { useToast } from '../components/Toast'
 
@@ -13,24 +13,22 @@ const PERMISSION_LABEL = {
 
 function PermissionBadge({ permission }) {
   const map = {
-    admin: 'bg-primary-container/30 text-primary',
-    gestor: 'bg-secondary-container text-on-secondary-container',
-    colaborador: 'bg-surface-container-high text-on-surface-variant',
+    admin: 'bg-[#0c3347] text-white',
+    gestor: 'bg-[#91efef] text-[#006e6e]',
+    colaborador: 'bg-[#e1e3e4] text-[#424753]',
   }
   return (
-    <span className={`px-2 py-1 rounded text-xs font-medium ${map[permission]}`}>{PERMISSION_LABEL[permission]}</span>
+    <span className={`px-2 py-1 rounded-[12px] text-xs font-medium ${map[permission]}`}>{PERMISSION_LABEL[permission]}</span>
   )
 }
 
 export default function Users() {
   const { user } = useAuth()
   const { toast } = useToast()
+  const navigate = useNavigate()
   const [users, setUsers] = useState([])
-  const [companies, setCompanies] = useState([])
   const [loading, setLoading] = useState(true)
-  const [form, setForm] = useState(null)
   const [confirm, setConfirm] = useState(null)
-  const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
   const load = useCallback(async () => {
@@ -47,65 +45,7 @@ export default function Users() {
 
   useEffect(() => {
     load()
-    api
-      .get('/companies')
-      .then((res) => setCompanies(res.data.data.companies))
-      .catch(() => {})
   }, [load])
-
-  const initialFormState = () => ({
-    id: null,
-    name: '',
-    email: '',
-    permission: 'colaborador',
-    password: '',
-    company_ids: [],
-  })
-
-  const openCreate = () => setForm(initialFormState())
-  const openEdit = (u) =>
-    setForm({
-      id: u.id,
-      name: u.name,
-      email: u.email,
-      permission: u.permission,
-      password: '',
-      company_ids: (u.companies || []).map((c) => c.id),
-    })
-
-  const toggleCompany = (id) => {
-    setForm((f) => {
-      const ids = f.company_ids.includes(id) ? f.company_ids.filter((x) => x !== id) : [...f.company_ids, id]
-      return { ...f, company_ids: ids }
-    })
-  }
-
-  const submit = async (e) => {
-    e.preventDefault()
-    setSaving(true)
-    try {
-      const payload = {
-        name: form.name,
-        email: form.email,
-        permission: form.permission,
-        company_ids: form.company_ids,
-      }
-      if (form.password) payload.password = form.password
-      if (form.id) {
-        await api.put(`/users/${form.id}`, payload)
-        toast('Usuário atualizado com sucesso.')
-      } else {
-        await api.post('/users', payload)
-        toast('Usuário criado com sucesso.')
-      }
-      setForm(null)
-      load()
-    } catch (err) {
-      toast(err.response?.data?.message || 'Erro ao salvar usuário.', 'error')
-    } finally {
-      setSaving(false)
-    }
-  }
 
   const doDelete = async () => {
     setDeleting(true)
@@ -125,18 +65,18 @@ export default function Users() {
     <div className="flex flex-col gap-6 pb-gutter">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <h2 className="font-display-lg text-display-lg text-on-surface font-bold">Usuários</h2>
+          <h2 className="font-display-lg text-display-lg text-on-surface font-bold" style={{ fontSize: 35 }}>Usuários</h2>
           <p className="text-on-surface-variant text-sm mt-1">Cadastro global de usuários e permissões.</p>
         </div>
         <button
-          onClick={openCreate}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#0f639d] text-on-primary text-sm font-medium hover:bg-[#0c5182] transition-colors"
+          onClick={() => navigate('/users/novo')}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0f639d] text-on-primary text-sm font-medium hover:bg-[#0c5182] transition-colors"
         >
-          <span className="material-symbols-outlined text-sm">add</span> Cadastrar Usuário
+          <span className="material-symbols-outlined text-sm" style={{fontSize:20}}>add</span> Novo Usuário
         </button>
       </div>
 
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
+      <div className="bg-surface-container-lowest border border-[#f2f4f5] !border-[#f2f4f5] rounded-xl overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <span className="material-symbols-outlined animate-spin text-4xl text-[#0f639d]">progress_activity</span>
@@ -146,8 +86,8 @@ export default function Users() {
             <span className="material-symbols-outlined text-5xl text-on-surface-variant/60">group</span>
             <h3 className="font-title-md text-title-md text-on-surface">Nenhum usuário cadastrado</h3>
             <button
-              onClick={openCreate}
-              className="px-4 py-2 rounded-full bg-[#0f639d] text-on-primary text-sm font-medium hover:bg-[#0c5182] transition-colors"
+              onClick={() => navigate('/users/novo')}
+              className="px-4 py-2 rounded-lg bg-[#0f639d] text-on-primary text-sm font-medium hover:bg-[#0c5182] transition-colors"
             >
               + Cadastrar Usuário
             </button>
@@ -155,20 +95,21 @@ export default function Users() {
         ) : (
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-surface-container-lowest border-b border-outline-variant">
-                <th className="p-4 font-label-sm text-label-sm text-on-surface-variant font-medium">Nome</th>
-                <th className="p-4 font-label-sm text-label-sm text-on-surface-variant font-medium">E-mail</th>
-                <th className="p-4 font-label-sm text-label-sm text-on-surface-variant font-medium">Permissão</th>
-                <th className="p-4 font-label-sm text-label-sm text-on-surface-variant font-medium">Empresas</th>
-                <th className="p-4 font-label-sm text-label-sm text-on-surface-variant font-medium w-32">Ações</th>
+              <tr className="bg-[#f2f4f5] border-b border-[#f2f4f5]">
+                <th className="p-4 font-label-sm text-label-sm text-on-surface-variant font-bold" style={{ fontSize: 15 }}>Nome</th>
+                <th className="p-4 font-label-sm text-label-sm text-on-surface-variant font-bold" style={{ fontSize: 15 }}>E-mail</th>
+                <th className="p-4 font-label-sm text-label-sm text-on-surface-variant font-bold" style={{ fontSize: 15 }}>Permissão</th>
+                <th className="p-4 font-label-sm text-label-sm text-on-surface-variant font-bold" style={{ fontSize: 15 }}>Empresas</th>
+                <th className="p-4 font-label-sm text-label-sm text-on-surface-variant font-bold" style={{ fontSize: 15 }}>Status</th>
+                <th className="p-4 font-label-sm text-label-sm text-on-surface-variant font-bold w-32" style={{ fontSize: 15 }}>Ações</th>
               </tr>
             </thead>
             <tbody>
               {users.map((u) => (
-                <tr key={u.id} className="border-b border-outline-variant last:border-b-0 hover:bg-surface-container-low transition-colors">
+                <tr key={u.id} className="border-b border-[#f2f4f5] last:border-b-0 hover:bg-surface-container-low transition-colors">
                   <td className="p-4">
                     <div className="flex items-center gap-3">
-                      <span className="w-8 h-8 rounded-full bg-primary-container text-on-primary-fixed-variant flex items-center justify-center font-bold text-sm">
+                      <span className="w-8 h-8 rounded-full bg-[#0f639d] text-white flex items-center justify-center font-bold text-sm">
                         {u.name.charAt(0).toUpperCase()}
                       </span>
                       <span className="font-medium text-on-surface">
@@ -184,8 +125,7 @@ export default function Users() {
                   <td className="p-4">
                     <div className="flex flex-wrap gap-1.5">
                       {(u.companies || []).map((c) => (
-                        <span key={c.id} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-high text-xs text-on-surface">
-                          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: c.color }} />
+                        <span key={c.id} className="flex items-center px-2.5 py-1 rounded-[12px] text-xs font-medium text-white" style={{ backgroundColor: c.color }}>
                           {c.name}
                         </span>
                       ))}
@@ -193,20 +133,32 @@ export default function Users() {
                     </div>
                   </td>
                   <td className="p-4">
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[12px] text-xs font-medium ${
+                        u.active === false
+                          ? 'bg-gray-200 text-gray-600'
+                          : 'bg-green-100 text-green-700'
+                      }`}
+                    >
+                      <span className={`w-2 h-2 rounded-full ${u.active === false ? 'bg-gray-400' : 'bg-green-500'}`} />
+                      {u.active === false ? 'Inativo' : 'Ativo'}
+                    </span>
+                  </td>
+                  <td className="p-4">
                     <div className="flex items-center gap-1">
                       <button
-                        onClick={() => openEdit(u)}
-                        className="p-1.5 hover:bg-surface-container-high rounded-full text-on-surface-variant transition-colors"
+                        onClick={() => navigate(`/users/${u.id}/editar`)}
+                        className="p-1.5 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-colors"
                         title="Editar"
                       >
-                        <span className="material-symbols-outlined text-sm">edit</span>
+                        <span className="material-symbols-outlined text-[20px]">edit</span>
                       </button>
                       <button
                         onClick={() => setConfirm({ id: u.id, name: u.name })}
-                        className="p-1.5 hover:bg-error-container rounded-full text-on-surface-variant hover:text-error transition-colors"
+                        className="p-1.5 hover:bg-error-container rounded-lg text-on-surface-variant hover:text-error transition-colors"
                         title="Excluir"
                       >
-                        <span className="material-symbols-outlined text-sm">delete</span>
+                        <span className="material-symbols-outlined text-[20px]">delete</span>
                       </button>
                     </div>
                   </td>
@@ -216,101 +168,6 @@ export default function Users() {
           </table>
         )}
       </div>
-
-      <Modal open={!!form} onClose={() => setForm(null)} title={form?.id ? 'Editar Usuário' : 'Cadastrar Usuário'} wide>
-        {form && (
-          <form onSubmit={submit} className="flex flex-col gap-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <label className="flex flex-col gap-1.5">
-                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Nome</span>
-                <input
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="rounded-lg border border-outline-variant bg-surface-container-low px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-[#0f639d]"
-                  required
-                />
-              </label>
-              <label className="flex flex-col gap-1.5">
-                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">E-mail</span>
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="rounded-lg border border-outline-variant bg-surface-container-low px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-[#0f639d]"
-                  required
-                />
-              </label>
-              <label className="flex flex-col gap-1.5">
-                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Permissão</span>
-                <select
-                  value={form.permission}
-                  onChange={(e) => setForm({ ...form, permission: e.target.value })}
-                  className="rounded-lg border border-outline-variant bg-surface-container-low px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-[#0f639d]"
-                >
-                  <option value="colaborador">Colaborador</option>
-                  <option value="gestor">Gestor</option>
-                  <option value="admin">Administrador</option>
-                </select>
-              </label>
-              <label className="flex flex-col gap-1.5">
-                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
-                  Senha {form.id && <em className="normal-case">(temporário - deixe vazio para manter)</em>}
-                </span>
-                <input
-                  type="password"
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  placeholder={form.id ? '••••••' : ''}
-                  className="rounded-lg border border-outline-variant bg-surface-container-low px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-[#0f639d]"
-                  minLength={form.id ? undefined : 6}
-                  required={!form.id}
-                />
-              </label>
-            </div>
-            <div>
-              <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Empresas vinculadas</span>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-                {companies.map((c) => (
-                  <label
-                    key={c.id}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-colors ${
-                      form.company_ids.includes(c.id)
-                        ? 'border-[#0f639d] bg-[#0f639d]/5'
-                        : 'border-outline-variant hover:bg-surface-container-low'
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={form.company_ids.includes(c.id)}
-                      onChange={() => toggleCompany(c.id)}
-                      className="accent-[#0f639d]"
-                    />
-                    <span className="w-3 h-3 rounded-full" style={{ backgroundColor: c.color }} />
-                    <span className="text-sm text-on-surface">{c.name}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div className="mt-2 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setForm(null)}
-                className="px-4 py-2 rounded-lg border border-outline-variant text-on-surface-variant text-sm font-medium hover:bg-surface-container-high transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className="px-4 py-2 rounded-lg bg-[#0f639d] text-on-primary text-sm font-medium hover:bg-[#0c5182] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                {saving && <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>}
-                {saving ? 'Gravando...' : 'Gravar'}
-              </button>
-            </div>
-          </form>
-        )}
-      </Modal>
 
       <ConfirmDialog
         open={!!confirm}

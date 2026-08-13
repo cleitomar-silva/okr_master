@@ -73,12 +73,12 @@ export default function Companies() {
     <div className="flex flex-col gap-6 pb-gutter">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <h2 className="font-display-lg text-display-lg text-on-surface font-bold">Empresas</h2>
-          <p className="text-on-surface-variant text-sm mt-1">Cadastro global de empresas. A cor é usada na barra superior.</p>
+          <h2 className="font-display-lg text-display-lg text-on-surface font-bold" style={{ fontSize: 35 }}>Configurações de Empresas</h2>
+          <p className="text-on-surface-variant text-sm mt-1">Gerencie as empresas cadastradas no sistema e adicione novas.</p>
         </div>
         <button
           onClick={() => setForm(initialFormState())}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#0f639d] text-on-primary text-sm font-medium hover:bg-[#0c5182] transition-colors"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0f639d] text-on-primary text-sm font-medium hover:bg-[#0c5182] transition-colors"
         >
           <span className="material-symbols-outlined text-sm">add</span> Cadastrar Empresa
         </button>
@@ -94,48 +94,43 @@ export default function Companies() {
           <h3 className="font-title-md text-title-md text-on-surface">Nenhuma empresa cadastrada</h3>
           <button
             onClick={() => setForm(initialFormState())}
-            className="px-4 py-2 rounded-full bg-[#0f639d] text-on-primary text-sm font-medium hover:bg-[#0c5182] transition-colors"
+            className="px-4 py-2 rounded-lg bg-[#0f639d] text-on-primary text-sm font-medium hover:bg-[#0c5182] transition-colors"
           >
             + Cadastrar Empresa
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter">
+        <div className="flex flex-col gap-4">
           {companies.map((c) => (
             <div key={c.id} className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
-              <div className="h-2" style={{ backgroundColor: c.color }} />
-              <div className="p-6">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="font-title-md text-title-md text-on-surface">{c.name}</h3>
-                    <p className="text-sm text-on-surface-variant mt-1">CNPJ: {c.cnpj}</p>
-                  </div>
-                  <span className="w-8 h-8 rounded-lg border-2 border-outline-variant" style={{ backgroundColor: c.color }} />
+              <div className="flex items-center gap-4 p-6 border-l-[4px]" style={{ borderLeftColor: c.color }}>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-title-md text-title-md text-[#0f639d] truncate">{c.name}</h3>
+                  <p className="text-sm text-on-surface-variant mt-1">CNPJ: {c.cnpj}</p>
                 </div>
-                <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
-                  <div className="bg-surface-container-low rounded-lg p-3">
-                    <span className="block font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Eixos</span>
-                    <span className="font-title-md text-title-md text-on-surface">{c.axes_count ?? 0}</span>
-                  </div>
-                  <div className="bg-surface-container-low rounded-lg p-3">
-                    <span className="block font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Usuários</span>
-                    <span className="font-title-md text-title-md text-on-surface">{c.users_count ?? 0}</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="w-10 h-10 rounded-[9999px]" style={{ backgroundColor: c.color }} />
+                  <div className="flex flex-col">
+                    <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+                      Cor Primária
+                    </span>
+                    <span className="text-xs text-on-surface font-medium">{c.color}</span>
                   </div>
                 </div>
-                <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-outline-variant/50">
+                <div className="flex-1 flex items-center justify-end gap-1 shrink-0">
                   <button
                     onClick={() => openEdit(c)}
-                    className="p-2 hover:bg-surface-container-high rounded-full text-on-surface-variant transition-colors"
+                    className="p-2 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-colors"
                     title="Editar"
                   >
-                    <span className="material-symbols-outlined text-sm">edit</span>
+                    <span className="material-symbols-outlined text-[20px]">edit</span>
                   </button>
                   <button
                     onClick={() => setConfirm({ id: c.id, name: c.name })}
-                    className="p-2 hover:bg-error-container rounded-full text-on-surface-variant hover:text-error transition-colors"
+                    className="p-2 hover:bg-error-container rounded-lg text-on-surface-variant hover:text-error transition-colors"
                     title="Excluir"
                   >
-                    <span className="material-symbols-outlined text-sm">delete</span>
+                    <span className="material-symbols-outlined text-[20px]">delete</span>
                   </button>
                 </div>
               </div>

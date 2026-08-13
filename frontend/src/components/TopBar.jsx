@@ -43,7 +43,7 @@ export default function TopBar({ onMenu }) {
     >
       <button
         onClick={onMenu}
-        className="text-on-primary hover:bg-black/10 transition-colors duration-200 p-2 rounded-full flex items-center justify-center md:hidden"
+        className="text-on-primary hover:bg-black/10 transition-colors duration-200 p-2 rounded-lg flex items-center justify-center md:hidden"
       >
         <span className="material-symbols-outlined">menu</span>
       </button>
