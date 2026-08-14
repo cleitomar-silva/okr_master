@@ -16,7 +16,7 @@ class ActionController extends Controller
         $request->validate(['objective_id' => 'required|integer|exists:objectives,id']);
         $this->assertCompanyAccess($request, $this->companyOfObjective($request->integer('objective_id')));
 
-        $actions = Action::with('users:id,name','initiatives:id,action_id,name,completed')
+        $actions = Action::with('users:id,name', 'initiatives:id,action_id,name,completed')
             ->where('objective_id', $request->integer('objective_id'))
             ->orderBy('name')
             ->get()
@@ -41,7 +41,7 @@ class ActionController extends Controller
         $action = Action::create($validated);
         $action->users()->sync($validated['user_ids'] ?? []);
 
-        return response()->json(['status' => 'ok', 'data' => ['action' => $this->serialize($action->fresh('users:id,name','initiatives'))]]);
+        return response()->json(['status' => 'ok', 'data' => ['action' => $this->serialize($action->fresh('users:id,name', 'initiatives'))]]);
     }
 
     public function update(Request $request, Action $action): JsonResponse
@@ -58,7 +58,7 @@ class ActionController extends Controller
         $action->update($validated);
         $action->users()->sync($validated['user_ids']);
 
-        return response()->json(['status' => 'ok', 'data' => ['action' => $this->serialize($action->fresh('users:id,name','initiatives'))]]);
+        return response()->json(['status' => 'ok', 'data' => ['action' => $this->serialize($action->fresh('users:id,name', 'initiatives'))]]);
     }
 
     public function destroy(Request $request, Action $action): JsonResponse
@@ -79,11 +79,28 @@ class ActionController extends Controller
         ]);
     }
 
+    public function toggle(Request $request, Action $action): JsonResponse
+    {
+        $user = $request->user();
+        $this->assertCompanyAccess($request, $this->companyOfAction($action->id));
+
+        $linked = $action->users->contains('id', $user->id);
+
+        if (! $user->canManageOkr() && ! $linked) {
+            abort(403, 'Você só pode marcar ações às quais está vinculado.');
+        }
+
+        $action->update(['completed' => ! $action->completed]);
+
+        return response()->json(['status' => 'ok', 'data' => ['action' => $this->serialize($action->fresh('users:id,name', 'initiatives'))]]);
+    }
+
     private function serialize(Action $action): array
     {
         return [
             'id' => $action->id,
             'name' => $action->name,
+            'completed' => (bool) $action->completed,
             'progress' => $action->progress(),
             'users' => $action->users,
             'initiatives' => $action->initiatives->map(fn ($i) => [

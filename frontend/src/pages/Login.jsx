@@ -30,37 +30,43 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#f8fafb] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg overflow-hidden">
-          <div className="px-8 py-6 bg-[#0f639d]">
-            <h1 className="font-display-lg text-display-lg text-on-primary font-bold">Cafaz OKRs</h1>
-            <p className="text-on-primary/80 text-sm mt-1">Sistema de Gestão de OKRs</p>
+          <div className="px-8 py-3 bg-[#0f639d]">
+            <img
+              src="/LOGO-GRUPO-CAFAZ-AZURE-VIVIDO.png"
+              alt="Logo Grupo Cafaz"
+              className="w-64 h-32 object-contain mx-auto mb-1"
+              style={{ filter: 'brightness(0) invert(1)' }}
+            />
+            <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-primary font-bold text-center">OKR Cafaz</h1>
+            <p className="text-on-primary/80 text-sm mt-1 text-center">Sistema de Gestão de OKRs</p>
           </div>
           <form onSubmit={submit} className="p-8 flex flex-col gap-4">
-            <h2 className="font-title-md text-title-md text-on-surface">Entrar</h2>
+            <p className="text-center" style={{ color: '#42474c' }}>Informe suas credenciais para continuar.</p>
             {error && (
               <p className="text-sm text-on-error-container bg-error-container border border-error/30 rounded-lg px-4 py-3">
                 {error}
               </p>
             )}
             <label className="flex flex-col gap-1.5">
-              <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">E-mail</span>
+              <span className="font-label-sm text-label-sm text-on-surface-variant tracking-wider font-bold">E-mail</span>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="rounded-lg border border-outline-variant bg-surface-container-low px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-[#0f639d]"
+                className="rounded-lg border border-outline-variant px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-[#0f639d]"
                 required
               />
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Senha</span>
+              <span className="font-label-sm text-label-sm text-on-surface-variant tracking-wider font-bold">Senha</span>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="rounded-lg border border-outline-variant bg-surface-container-low px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-[#0f639d]"
+                className="rounded-lg border border-outline-variant px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-[#0f639d]"
                 required
               />
             </label>
@@ -71,9 +77,7 @@ export default function Login() {
             >
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
-            <p className="text-xs text-on-surface-variant text-center mt-2">
-              Demonstração: admin@cafaz.com / gestor@cafaz.com / colaborador@cafaz.com — senha: password
-            </p>
+           
           </form>
         </div>
       </div>

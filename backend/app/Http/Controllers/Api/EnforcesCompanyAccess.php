@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Action;
+use App\Models\Attachment;
 use App\Models\Axis;
-use App\Models\Company;
 use App\Models\Initiative;
-use App\Models\Objective;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -85,13 +84,26 @@ trait EnforcesCompanyAccess
         ];
     }
 
+    protected function attachmentData(Attachment $attachment): array
+    {
+        return [
+            'id' => $attachment->id,
+            'name' => $attachment->name,
+            'mime_type' => $attachment->mime_type,
+            'size' => $attachment->size,
+            'download_url' => '/api/v1/attachments/'.$attachment->id.'/download',
+        ];
+    }
+
     protected function actionData(Action $action, User $user): array
     {
         return [
             'id' => $action->id,
             'name' => $action->name,
+            'completed' => (bool) $action->completed,
             'progress' => $action->progress(),
             'users' => $action->users->map(fn (User $u) => $this->serializeUser($u)),
+            'attachments' => $action->attachments->map(fn (Attachment $a) => $this->attachmentData($a))->values(),
             'mine' => $action->users->contains('id', $user->id),
         ];
     }
@@ -103,6 +115,7 @@ trait EnforcesCompanyAccess
             'name' => $initiative->name,
             'completed' => $initiative->completed,
             'users' => $initiative->users->map(fn (User $u) => $this->serializeUser($u)),
+            'attachments' => $initiative->attachments->map(fn (Attachment $a) => $this->attachmentData($a))->values(),
             'mine' => $initiative->users->contains('id', $user->id),
         ];
     }

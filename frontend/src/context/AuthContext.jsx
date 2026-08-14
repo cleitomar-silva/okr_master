@@ -1,19 +1,20 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import api from '../api'
+import { clearSession, getLoginAt, isSessionExpired, SESSION_DURATION, setSessionStart } from '../session'
 
 const AuthContext = createContext(null)
 
-const PERSISTED = 'selected_company_id'
+const PERSISTED = 'okr_selected_company_id'
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem('user'))
+      return JSON.parse(localStorage.getItem('okr_user'))
     } catch {
       return null
     }
   })
-  const [loading, setLoading] = useState(Boolean(localStorage.getItem('token')))
+  const [loading, setLoading] = useState(Boolean(localStorage.getItem('okr_token')))
   const [company, setCompany] = useState(() => {
     const id = localStorage.getItem(PERSISTED)
     return id ? Number(id) : null
@@ -42,24 +43,11 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  useEffect(() => {
-    if (localStorage.getItem('token')) {
-      api
-        .get('/me')
-        .then((res) => {
-          const u = res.data.data.user
-          setUser(u)
-          localStorage.setItem('user', JSON.stringify(u))
-          selectInitialCompany(u)
-        })
-        .finally(() => setLoading(false))
-    }
-  }, [selectInitialCompany])
-
   const login = useCallback(async (email, password) => {
     const { data } = await api.post('/login', { email, password })
-    localStorage.setItem('token', data.data.token)
-    localStorage.setItem('user', JSON.stringify(data.data.user))
+    localStorage.setItem('okr_token', data.data.token)
+    localStorage.setItem('okr_user', JSON.stringify(data.data.user))
+    setSessionStart()
     setUser(data.data.user)
     selectInitialCompany(data.data.user)
     return data.data.user
@@ -71,9 +59,7 @@ export function AuthProvider({ children }) {
     } catch {
       /* ignore */
     }
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    localStorage.removeItem(PERSISTED)
+    clearSession()
     setUser(null)
     setCompany(null)
   }, [])
@@ -82,15 +68,44 @@ export function AuthProvider({ children }) {
     async (updated) => {
       if (updated) {
         setUser(updated)
-        localStorage.setItem('user', JSON.stringify(updated))
+        localStorage.setItem('okr_user', JSON.stringify(updated))
       } else {
         const { data } = await api.get('/me')
         setUser(data.data.user)
-        localStorage.setItem('user', JSON.stringify(data.data.user))
+        localStorage.setItem('okr_user', JSON.stringify(data.data.user))
       }
     },
     [],
   )
+
+  useEffect(() => {
+    if (!localStorage.getItem('okr_token')) return
+
+    if (isSessionExpired()) {
+      clearSession()
+      setUser(null)
+      setCompany(null)
+      setLoading(false)
+      return
+    }
+
+    api
+      .get('/me')
+      .then((res) => {
+        const u = res.data.data.user
+        setUser(u)
+        localStorage.setItem('okr_user', JSON.stringify(u))
+        selectInitialCompany(u)
+      })
+      .finally(() => setLoading(false))
+
+    const remaining = Math.max(0, SESSION_DURATION - (Date.now() - getLoginAt()))
+    const timer = setTimeout(() => {
+      logout()
+    }, remaining)
+
+    return () => clearTimeout(timer)
+  }, [selectInitialCompany, logout])
 
   const value = useMemo(
     () => ({ user, company, loading, isAdmin, login, logout, selectCompany, refreshUser }),

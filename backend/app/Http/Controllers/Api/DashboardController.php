@@ -8,7 +8,6 @@ use App\Models\Axis;
 use App\Models\Company;
 use App\Models\Initiative;
 use App\Models\Objective;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -32,7 +31,7 @@ class DashboardController extends Controller
         $mine = $request->boolean('mine');
         $user = $request->user();
 
-        $axes = Axis::with('objectives.actions.initiatives:id,action_id,name,completed', 'objectives.actions.users:id,name', 'objectives.actions.initiatives.users:id,name')
+        $axes = Axis::with('objectives.actions.initiatives:id,action_id,name,completed', 'objectives.actions.users:id,name', 'objectives.actions.initiatives.users:id,name', 'objectives.actions.attachments:id,attachable_type,attachable_id,name,mime_type,size', 'objectives.actions.initiatives.attachments:id,attachable_type,attachable_id,name,mime_type,size')
             ->where('company_id', $companyId)
             ->when($request->filled('axis_id'), fn ($q) => $q->where('id', $request->integer('axis_id')))
             ->orderBy('name')
@@ -170,6 +169,7 @@ class DashboardController extends Controller
                 foreach ($objective['actions'] as $action) {
                     if ($action['mine']) {
                         $actions[] = $action;
+
                         continue;
                     }
 

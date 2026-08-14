@@ -1,0 +1,83 @@
+name: okr-master
+
+# Uso:
+#   export APP_KEY="$(php artisan key:generate --show)"   # gere um APP_KEY unico
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Variaveis opcionais:
+#   FRONTEND_PORT   porta publica do frontend (padrao 5176, igual ao dev)
+#   BACKEND_PORT    porta publica do backend (padrao 9192, igual ao dev)
+#   MYSQL_PORT      porta publica do MySQL (padrao 3308, igual ao dev)
+#   APP_URL         URL publica (ex: https://okr.meudominio.com.br)
+#   DB_PASSWORD / DB_ROOT_PASSWORD  senhas do MySQL
+#   NPM_STRICT_SSL  false se a rede interceptar TLS (rede corporativa/proxy)
+
+services:
+  mysql:
+    image: mysql:9.0.1
+    container_name: okr-prod-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: okr_master
+      MYSQL_USER: okr
+      MYSQL_PASSWORD: "${DB_PASSWORD:-C@f@z!2023*#_bd!}"
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpass}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "${MYSQL_PORT:-3308}:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DB_ROOT_PASSWORD:-rootpass}"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks: [app]
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: okr-prod-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "${BACKEND_PORT:-9192}:9192"
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_URL: ${APP_URL:-http://localhost}
+      APP_KEY: ${APP_KEY:-base64:XH3FLZYcsCcyPhwjFQFTCfuopkhqBy8aHNfIeZpyoAM=}
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: okr_master
+      DB_USERNAME: okr
+      DB_PASSWORD: "${DB_PASSWORD:-C@f@z!2023*#_bd!}"
+    volumes:
+      - okr_storage:/app/storage
+    networks: [app]
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        VITE_API_URL: ""
+        NPM_STRICT_SSL: ${NPM_STRICT_SSL:-true}
+    container_name: okr-prod-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-5176}:80"
+    networks: [app]
+
+volumes:
+  mysql_data:
+  okr_storage:
+
+networks:
+  app:
+    driver: bridge

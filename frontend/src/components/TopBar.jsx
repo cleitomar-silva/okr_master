@@ -37,13 +37,14 @@ export default function TopBar({ onMenu }) {
   const current = companies.find((c) => c.id === company) || user?.companies?.find((c) => c.id === company)
 
   return (
+    <>
     <header
       className="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop h-16 shrink-0 z-50"
       style={{ backgroundColor: current?.color || '#0f639d' }}
     >
       <button
         onClick={onMenu}
-        className="text-on-primary hover:bg-black/10 transition-colors duration-200 p-2 rounded-full flex items-center justify-center md:hidden"
+        className="text-on-primary hover:bg-black/10 transition-colors duration-200 p-2 rounded-lg flex items-center justify-center md:hidden"
       >
         <span className="material-symbols-outlined">menu</span>
       </button>
@@ -127,5 +128,15 @@ export default function TopBar({ onMenu }) {
         )}
       </div>
     </header>
+
+    {loggingOut && (
+      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div className="flex items-center gap-3 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-xl px-6 py-5">
+          <span className="material-symbols-outlined animate-spin text-3xl text-[#0f639d]">progress_activity</span>
+          <span className="text-sm font-medium text-on-surface">Saindo...</span>
+        </div>
+      </div>
+    )}
+    </>
   )
 }
