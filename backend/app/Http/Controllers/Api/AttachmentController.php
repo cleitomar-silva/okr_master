@@ -20,7 +20,11 @@ class AttachmentController extends Controller
             'attachable_type' => 'required|string|in:action,initiative',
             'attachable_id' => 'required|integer',
             'files' => 'required|array|min:1',
+<<<<<<< HEAD
             'files.*' => 'required|file|max:51200|mimes:pdf,png,jpg,jpeg,gif,webp,bmp,xls,xlsx,csv',
+=======
+            'files.*' => 'required|file|max:10240|mimes:pdf,png,jpg,jpeg,gif,webp,bmp,xls,xlsx,csv',
+>>>>>>> origin/main
         ]);
 
         $isAction = $validated['attachable_type'] === 'action';

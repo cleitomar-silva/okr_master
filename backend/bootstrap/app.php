@@ -1,7 +1,10 @@
 <?php
 
 use App\Http\Middleware\EnsureUserIsActive;
+<<<<<<< HEAD
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+=======
+>>>>>>> origin/main
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;

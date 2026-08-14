@@ -54,7 +54,11 @@ const ACCEPTED_MIME = [
   'text/csv',
   'application/csv',
 ]
+<<<<<<< HEAD
 const MAX_FILE_SIZE = 50 * 1024 * 1024
+=======
+const MAX_FILE_SIZE = 10 * 1024 * 1024
+>>>>>>> origin/main
 
 export default function ItemFormModal({ type, open, companyId, parentId, item, onClose, onSaved }) {
   const { toast } = useToast()
@@ -70,7 +74,10 @@ export default function ItemFormModal({ type, open, companyId, parentId, item, o
   const [pendingFiles, setPendingFiles] = useState([])
   const [attachmentsError, setAttachmentsError] = useState('')
   const [busy, setBusy] = useState(null)
+<<<<<<< HEAD
   const [confirmDelete, setConfirmDelete] = useState(null)
+=======
+>>>>>>> origin/main
 
   useEffect(() => {
     if (!open) return
@@ -79,7 +86,10 @@ export default function ItemFormModal({ type, open, companyId, parentId, item, o
     setAttachments(item?.attachments || [])
     setPendingFiles([])
     setAttachmentsError('')
+<<<<<<< HEAD
     setConfirmDelete(null)
+=======
+>>>>>>> origin/main
     if (cfg.fields.includes('users')) {
       setLoadingUsers(true)
       setAvailable([])
@@ -103,7 +113,11 @@ export default function ItemFormModal({ type, open, companyId, parentId, item, o
     if (files.length === 0) return
     const invalid = files.filter((f) => !ACCEPTED_MIME.includes(f.type) || f.size > MAX_FILE_SIZE)
     if (invalid.length > 0) {
+<<<<<<< HEAD
       setAttachmentsError('Apenas arquivos PDF, imagens e planilhas, com no máximo 50MB cada.')
+=======
+      setAttachmentsError('Apenas arquivos PDF, imagens e planilhas, com no máximo 10MB cada.')
+>>>>>>> origin/main
       return
     }
     setAttachmentsError('')
@@ -135,11 +149,15 @@ export default function ItemFormModal({ type, open, companyId, parentId, item, o
   }
 
   const removeAttachment = async (att) => {
+<<<<<<< HEAD
     setBusy({ id: att.id, action: 'delete' })
+=======
+>>>>>>> origin/main
     try {
       await api.delete(`/attachments/${att.id}`)
       setAttachments((prev) => prev.filter((a) => a.id !== att.id))
       toast('Anexo removido.')
+<<<<<<< HEAD
       onSaved()
     } catch (err) {
       toast(err.response?.data?.message || 'Erro ao remover o anexo.', 'error')
@@ -154,6 +172,13 @@ export default function ItemFormModal({ type, open, companyId, parentId, item, o
     await removeAttachment(att)
   }
 
+=======
+    } catch (err) {
+      toast(err.response?.data?.message || 'Erro ao remover o anexo.', 'error')
+    }
+  }
+
+>>>>>>> origin/main
   const uploadPending = async (targetId) => {
     if (pendingFiles.length === 0) return
     const formData = new FormData()
@@ -264,7 +289,11 @@ export default function ItemFormModal({ type, open, companyId, parentId, item, o
             <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
               Anexos
               <span className="text-xs font-normal normal-case text-on-surface-variant ml-1">
+<<<<<<< HEAD
                 (PDF, imagens e planilhas — máx. 50MB por arquivo)
+=======
+                (PDF, imagens e planilhas — máx. 10MB por arquivo)
+>>>>>>> origin/main
               </span>
             </span>
             <label className="flex items-center justify-center gap-2 px-4 py-6 rounded-lg border border-dashed border-outline-variant text-on-surface-variant hover:bg-surface-container-low cursor-pointer transition-colors">
@@ -340,7 +369,11 @@ export default function ItemFormModal({ type, open, companyId, parentId, item, o
                     </button>
                     <button
                       type="button"
+<<<<<<< HEAD
                       onClick={() => setConfirmDelete(att)}
+=======
+                      onClick={() => removeAttachment(att)}
+>>>>>>> origin/main
                       className="p-1 rounded-lg text-on-surface-variant hover:text-error transition-colors"
                       title="Excluir"
                     >

@@ -677,7 +677,11 @@ export default function Dashboard() {
 
       <button
         onClick={() => openForm('eixo', company, null)}
+<<<<<<< HEAD
         className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-[50%] bg-[#0f639d] text-on-primary shadow-lg shadow-[#0f639d]/30 hover:bg-[#0c5182] hover:scale-105 transition-all flex items-center justify-center"
+=======
+        className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-lg bg-[#0f639d] text-on-primary shadow-lg shadow-[#0f639d]/30 hover:bg-[#0c5182] hover:scale-105 transition-all flex items-center justify-center"
+>>>>>>> origin/main
         title="Cadastrar Eixo"
       >
         <span className="material-symbols-outlined text-2xl">add</span>

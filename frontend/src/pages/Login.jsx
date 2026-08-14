@@ -40,7 +40,11 @@ export default function Login() {
               className="w-64 h-32 object-contain mx-auto mb-1"
               style={{ filter: 'brightness(0) invert(1)' }}
             />
+<<<<<<< HEAD
             <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-primary font-bold text-center">OKR Cafaz</h1>
+=======
+            <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-primary font-bold text-center">OKR Master</h1>
+>>>>>>> origin/main
             <p className="text-on-primary/80 text-sm mt-1 text-center">Sistema de Gestão de OKRs</p>
           </div>
           <form onSubmit={submit} className="p-8 flex flex-col gap-4">
