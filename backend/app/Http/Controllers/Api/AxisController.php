@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Action;
 use App\Models\Axis;
 use App\Models\Objective;
+use App\Models\Year;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -32,10 +33,13 @@ class AxisController extends Controller
 
         $validated = $request->validate([
             'company_id' => 'required|integer|exists:companies,id',
+            'year' => 'required|integer|between:2000,2100',
             'name' => 'required|string|max:255',
         ]);
 
         $this->assertCompanyAccess($request, $validated['company_id']);
+
+        Year::firstOrCreate(['year' => $validated['year']]);
 
         $axis = Axis::create($validated);
 

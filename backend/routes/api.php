@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AxisController;
 use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\FollowUpController;
 use App\Http\Controllers\Api\InitiativeController;
 use App\Http\Controllers\Api\ObjectiveController;
 use App\Http\Controllers\Api\UserController;
@@ -23,6 +24,8 @@ Route::prefix('v1')->group(function () {
 
         Route::get('dashboard', [DashboardController::class, 'index']);
         Route::get('filters', [DashboardController::class, 'filters']);
+        Route::get('years', [DashboardController::class, 'years']);
+        Route::post('years', [DashboardController::class, 'storeYear']);
         Route::get('linkable-users', [DashboardController::class, 'linkableUsers']);
 
         Route::apiResource('users', UserController::class);
@@ -38,5 +41,8 @@ Route::prefix('v1')->group(function () {
         Route::post('attachments', [AttachmentController::class, 'store']);
         Route::get('attachments/{attachment}/download', [AttachmentController::class, 'download']);
         Route::delete('attachments/{attachment}', [AttachmentController::class, 'destroy']);
+
+        Route::get('follow-ups', [FollowUpController::class, 'index']);
+        Route::post('follow-ups', [FollowUpController::class, 'store']);
     });
 });

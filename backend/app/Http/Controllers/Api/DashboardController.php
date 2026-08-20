@@ -8,6 +8,7 @@ use App\Models\Axis;
 use App\Models\Company;
 use App\Models\Initiative;
 use App\Models\Objective;
+use App\Models\Year;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -19,6 +20,7 @@ class DashboardController extends Controller
     {
         $request->validate([
             'company_id' => 'required|integer|exists:companies,id',
+            'year' => 'required|integer|between:2000,2100',
             'axis_id' => 'nullable|integer|exists:axes,id',
             'objective_id' => 'nullable|integer|exists:objectives,id',
             'action_id' => 'nullable|integer|exists:actions,id',
@@ -26,6 +28,7 @@ class DashboardController extends Controller
         ]);
 
         $companyId = $request->integer('company_id');
+        $year = $request->integer('year');
         $this->assertCompanyAccess($request, $companyId);
 
         $mine = $request->boolean('mine');
@@ -33,6 +36,7 @@ class DashboardController extends Controller
 
         $axes = Axis::with('objectives.actions.initiatives:id,action_id,name,completed', 'objectives.actions.users:id,name', 'objectives.actions.initiatives.users:id,name', 'objectives.actions.attachments:id,attachable_type,attachable_id,name,mime_type,size', 'objectives.actions.initiatives.attachments:id,attachable_type,attachable_id,name,mime_type,size')
             ->where('company_id', $companyId)
+            ->where('year', $year)
             ->when($request->filled('axis_id'), fn ($q) => $q->where('id', $request->integer('axis_id')))
             ->orderBy('name')
             ->get();
@@ -126,11 +130,15 @@ class DashboardController extends Controller
 
     public function filters(Request $request): JsonResponse
     {
-        $request->validate(['company_id' => 'required|integer|exists:companies,id']);
+        $request->validate([
+            'company_id' => 'required|integer|exists:companies,id',
+            'year' => 'required|integer|between:2000,2100',
+        ]);
         $companyId = $request->integer('company_id');
+        $year = $request->integer('year');
         $this->assertCompanyAccess($request, $companyId);
 
-        $axes = Axis::where('company_id', $companyId)->orderBy('name')->get(['id', 'name']);
+        $axes = Axis::where('company_id', $companyId)->where('year', $year)->orderBy('name')->get(['id', 'name']);
         $axisIds = $axes->pluck('id');
         $objectives = Objective::whereIn('axis_id', $axisIds)->orderBy('name')->get(['id', 'axis_id', 'name']);
         $objectiveIds = $objectives->pluck('id');
@@ -139,6 +147,31 @@ class DashboardController extends Controller
         return response()->json([
             'status' => 'ok',
             'data' => compact('axes', 'objectives', 'actions'),
+        ]);
+    }
+
+    public function years(Request $request): JsonResponse
+    {
+        Year::firstOrCreate(['year' => (int) date('Y')]);
+        $years = Year::orderByDesc('year')->pluck('year');
+
+        return response()->json(['status' => 'ok', 'data' => ['years' => $years]]);
+    }
+
+    public function storeYear(Request $request): JsonResponse
+    {
+        $request->validate([
+            'year' => 'required|integer|between:2000,2100|unique:years,year',
+        ]);
+
+        $year = Year::create(['year' => $request->integer('year')]);
+
+        return response()->json([
+            'status' => 'ok',
+            'data' => [
+                'year' => $year,
+                'years' => Year::orderByDesc('year')->pluck('year'),
+            ],
         ]);
     }
 

@@ -35,4 +35,9 @@ class Initiative extends Model
     {
         return $this->morphMany(Attachment::class, 'attachable');
     }
+
+    public function followUps(): MorphMany
+    {
+        return $this->morphMany(FollowUp::class, 'followupable');
+    }
 }

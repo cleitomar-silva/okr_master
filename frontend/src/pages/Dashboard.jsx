@@ -6,15 +6,16 @@ import EmptyState from '../components/EmptyState'
 import ItemFormModal from '../components/ItemFormModal'
 import AttachmentPopover from '../components/AttachmentPopover'
 import ConfirmDialog from '../components/ConfirmDialog'
+import FollowUpModal from '../components/FollowUpModal'
 import { useToast } from '../components/Toast'
 
 function SelectFilter({ value, onChange, options, placeholder }) {
   return (
-    <div className="relative">
+    <div className="relative flex-1 min-w-[200px]">
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="appearance-none bg-surface-container-low border border-outline-variant rounded-lg pl-3 pr-8 py-2 text-sm text-on-surface focus:outline-none focus:border-[#0f639d] cursor-pointer w-full md:w-auto"
+        className="appearance-none bg-surface-container-low border border-outline-variant rounded-lg pl-3 pr-8 py-2 text-sm text-on-surface focus:outline-none focus:border-[#0f639d] cursor-pointer w-full"
       >
         <option value="">{placeholder}</option>
         {options.map((o) => (
@@ -30,7 +31,7 @@ function SelectFilter({ value, onChange, options, placeholder }) {
   )
 }
 
-const ActionRow = memo(function ActionRow({ action, canEdit, isAdmin, onForm, onDelete, onToggleInitiative, onToggleAction, togglingId }) {
+const ActionRow = memo(function ActionRow({ action, canEdit, isAdmin, onForm, onDelete, onFollowUp, onToggleInitiative, onToggleAction, togglingId }) {
   const [initiativesOpen, setInitiativesOpen] = useState(false)
   const done = action.progress === 100
   const hasInitiatives = action.initiatives?.length > 0
@@ -90,6 +91,13 @@ const ActionRow = memo(function ActionRow({ action, canEdit, isAdmin, onForm, on
               title="Cadastrar Iniciativa"
             >
               <span className="material-symbols-outlined text-[20px]">add</span>
+            </button>
+            <button
+              onClick={() => onFollowUp('acao', { id: action.id, name: action.name })}
+              className="p-1 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-colors"
+              title="Follow-up"
+            >
+              <span className="material-symbols-outlined text-[20px]">event_note</span>
             </button>
             {canEdit && (
               <button
@@ -169,6 +177,13 @@ const ActionRow = memo(function ActionRow({ action, canEdit, isAdmin, onForm, on
                   </button>
                   <AttachmentPopover attachments={initiative.attachments} />
                   <UsersBadge users={initiative.users} />
+                  <button
+                    onClick={() => onFollowUp('iniciativa', { id: initiative.id, name: initiative.name })}
+                    className="p-1 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-colors"
+                    title="Follow-up"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">event_note</span>
+                  </button>
                   {canEdit && (
                     <button
                       onClick={() => onForm('iniciativa', null, { id: initiative.id, name: initiative.name, users: initiative.users, attachments: initiative.attachments })}
@@ -197,7 +212,7 @@ const ActionRow = memo(function ActionRow({ action, canEdit, isAdmin, onForm, on
   )
 })
 
-const ObjectiveBlock = memo(function ObjectiveBlock({ objective, objIndex, canEdit, isAdmin, expanded, onToggle, onForm, onDelete, onToggleInitiative, onToggleAction, togglingId }) {
+const ObjectiveBlock = memo(function ObjectiveBlock({ objective, objIndex, canEdit, isAdmin, expanded, onToggle, onForm, onDelete, onFollowUp, onToggleInitiative, onToggleAction, togglingId }) {
   const objOpen = expanded.has(`obj-${objective.id}`)
   const objProgress = objective.actions.length
     ? Math.round(objective.actions.reduce((s, a) => s + a.progress, 0) / objective.actions.length)
@@ -301,6 +316,7 @@ const ObjectiveBlock = memo(function ObjectiveBlock({ objective, objIndex, canEd
                   isAdmin={isAdmin}
                   onForm={onForm}
                   onDelete={onDelete}
+                  onFollowUp={onFollowUp}
                   onToggleInitiative={onToggleInitiative}
                   onToggleAction={onToggleAction}
                   togglingId={togglingId}
@@ -314,7 +330,7 @@ const ObjectiveBlock = memo(function ObjectiveBlock({ objective, objIndex, canEd
   )
 })
 
-const AxisBlock = memo(function AxisBlock({ axis, canEdit, isAdmin, expanded, onToggle, onForm, onDelete, onToggleInitiative, onToggleAction, togglingId }) {
+const AxisBlock = memo(function AxisBlock({ axis, canEdit, isAdmin, expanded, onToggle, onForm, onDelete, onFollowUp, onToggleInitiative, onToggleAction, togglingId }) {
   const axisOpen = expanded.has(`axis-${axis.id}`)
   const axisProgress =
     axis.objectives.length > 0
@@ -413,6 +429,7 @@ const AxisBlock = memo(function AxisBlock({ axis, canEdit, isAdmin, expanded, on
               onToggle={onToggle}
               onForm={onForm}
               onDelete={onDelete}
+              onFollowUp={onFollowUp}
               onToggleInitiative={onToggleInitiative}
               onToggleAction={onToggleAction}
               togglingId={togglingId}
@@ -425,7 +442,7 @@ const AxisBlock = memo(function AxisBlock({ axis, canEdit, isAdmin, expanded, on
 })
 
 export default function Dashboard() {
-  const { user, company, isAdmin } = useAuth()
+  const { user, company, year, isAdmin } = useAuth()
   const { toast } = useToast()
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -433,6 +450,7 @@ export default function Dashboard() {
   const [filters, setFilters] = useState({ axis_id: '', objective_id: '', action_id: '', mine: false })
   const [expanded, setExpanded] = useState(new Set())
   const [form, setForm] = useState(null)
+  const [followUp, setFollowUp] = useState(null)
   const [confirm, setConfirm] = useState(null)
   const [deleting, setDeleting] = useState(false)
   const [togglingId, setTogglingId] = useState(null)
@@ -445,7 +463,7 @@ export default function Dashboard() {
     if (!company) return
     setLoading(true)
     try {
-      const params = { company_id: company }
+      const params = { company_id: company, year }
       if (filters.axis_id) params.axis_id = Number(filters.axis_id)
       if (filters.objective_id) params.objective_id = Number(filters.objective_id)
       if (filters.action_id) params.action_id = Number(filters.action_id)
@@ -477,12 +495,12 @@ export default function Dashboard() {
     } finally {
       setLoading(false)
     }
-  }, [company, filters, toast])
+  }, [company, year, filters, toast])
 
   const loadFilters = useCallback(async () => {
     if (!company) return
     try {
-      const { data: res } = await api.get('/filters', { params: { company_id: company } })
+      const { data: res } = await api.get('/filters', { params: { company_id: company, year } })
       const payload = res.data
       setFilterData(payload && Array.isArray(payload.axes)
         ? payload
@@ -490,7 +508,7 @@ export default function Dashboard() {
     } catch {
       /* ignore */
     }
-  }, [company])
+  }, [company, year])
 
   useEffect(() => {
     loadDashboard()
@@ -499,6 +517,15 @@ export default function Dashboard() {
   useEffect(() => {
     loadFilters()
   }, [company, loadFilters])
+
+  useEffect(() => {
+    setFilters({ axis_id: '', objective_id: '', action_id: '', mine: false })
+    setFilterData({ axes: [], objectives: [], actions: [] })
+  }, [company])
+
+  useEffect(() => {
+    setFilters((f) => ({ ...f, axis_id: '', objective_id: '', action_id: '' }))
+  }, [year])
 
   const toggleExpand = (key) => {
     setExpanded((prev) => {
@@ -510,6 +537,7 @@ export default function Dashboard() {
   }
 
   const openForm = (type, parentId, item) => setForm({ type, parentId, item })
+  const openFollowUp = (type, item) => setFollowUp({ type, id: item.id, name: item.name })
   const requestDelete = (type, item, impact) =>
     setConfirm({ type, item, impact, message: `Deseja realmente excluir "${item.name}"?` })
 
@@ -572,7 +600,7 @@ export default function Dashboard() {
     <div className="flex flex-col gap-6 pb-28">
       {/* Filters */}
       <div className="flex flex-col md:flex-row items-center gap-4 bg-surface-container-lowest p-4 rounded-xl border border-outline-variant">
-        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+        <div className="flex flex-wrap items-center gap-2 w-full">
           <SelectFilter
             label="Eixo"
             placeholder="Eixos"
@@ -635,6 +663,7 @@ export default function Dashboard() {
             onToggle={toggleExpand}
             onForm={openForm}
             onDelete={requestDelete}
+            onFollowUp={openFollowUp}
             onToggleInitiative={toggleInitiative}
             onToggleAction={toggleAction}
             togglingId={togglingId}
@@ -649,8 +678,22 @@ export default function Dashboard() {
           companyId={company}
           parentId={form.parentId}
           item={form.item}
+          isAdmin={isAdmin}
+          year={year}
           onClose={() => setForm(null)}
           onSaved={loadDashboard}
+        />
+      )}
+
+      {followUp && (
+        <FollowUpModal
+          type={followUp.type}
+          itemId={followUp.id}
+          itemName={followUp.name}
+          companyId={company}
+          canEdit={canEdit}
+          open={!!followUp}
+          onClose={() => setFollowUp(null)}
         />
       )}
 

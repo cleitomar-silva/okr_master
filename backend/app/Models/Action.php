@@ -42,6 +42,11 @@ class Action extends Model
         return $this->morphMany(Attachment::class, 'attachable');
     }
 
+    public function followUps(): MorphMany
+    {
+        return $this->morphMany(FollowUp::class, 'followupable');
+    }
+
     public function progress(): int
     {
         $initiatives = $this->relationLoaded('initiatives') ? $this->initiatives : $this->initiatives()->get();

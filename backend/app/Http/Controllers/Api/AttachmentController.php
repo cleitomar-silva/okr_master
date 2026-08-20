@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Action;
 use App\Models\Attachment;
+use App\Models\FollowUp;
 use App\Models\Initiative;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,19 +18,14 @@ class AttachmentController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'attachable_type' => 'required|string|in:action,initiative',
+            'attachable_type' => 'required|string|in:action,initiative,follow_up',
             'attachable_id' => 'required|integer',
             'files' => 'required|array|min:1',
-            'files.*' => 'required|file|max:51200|mimes:pdf,png,jpg,jpeg,gif,webp,bmp,xls,xlsx,csv',
+            'files.*' => 'required|file|max:51200|extensions:pdf,png,jpg,jpeg,gif,webp,bmp,xls,xlsx,csv',
         ]);
 
-        $isAction = $validated['attachable_type'] === 'action';
-        $modelClass = $isAction ? Action::class : Initiative::class;
-
-        $attachable = $modelClass::withTrashed()->findOrFail($validated['attachable_id']);
-        $companyId = $isAction
-            ? $this->companyOfAction($attachable->id)
-            : $this->companyOfInitiative($attachable->id);
+        $attachable = $this->resolveAttachable($validated['attachable_type'], $validated['attachable_id']);
+        $companyId = $this->companyOfAttachable($attachable);
 
         $this->assertCompanyAccess($request, $companyId);
 
@@ -69,6 +65,7 @@ class AttachmentController extends Controller
 
     public function destroy(Request $request, Attachment $attachment): JsonResponse
     {
+        $this->assertCanDeleteOkr($request);
         $this->assertAccess($request, $attachment);
 
         $attachment->delete();
@@ -78,10 +75,35 @@ class AttachmentController extends Controller
 
     private function assertAccess(Request $request, Attachment $attachment): void
     {
-        $companyId = $attachment->attachable_type === Action::class
-            ? $this->companyOfAction($attachment->attachable_id)
-            : $this->companyOfInitiative($attachment->attachable_id);
+        $attachable = $this->resolveByClass($attachment->attachable_type, $attachment->attachable_id);
 
-        $this->assertCompanyAccess($request, $companyId);
+        $this->assertCompanyAccess($request, $this->companyOfAttachable($attachable));
+    }
+
+    private function resolveAttachable(string $type, int $id): Action|FollowUp|Initiative
+    {
+        return match ($type) {
+            'action' => Action::withTrashed()->findOrFail($id),
+            'initiative' => Initiative::withTrashed()->findOrFail($id),
+            'follow_up' => FollowUp::findOrFail($id),
+        };
+    }
+
+    private function resolveByClass(string $class, int $id): Action|FollowUp|Initiative
+    {
+        return $class === FollowUp::class
+            ? FollowUp::findOrFail($id)
+            : $class::withTrashed()->findOrFail($id);
+    }
+
+    private function companyOfAttachable(Action|FollowUp|Initiative $attachable): int
+    {
+        if ($attachable instanceof FollowUp) {
+            return $this->companyOfFollowUp($attachable->id);
+        }
+
+        return $attachable instanceof Action
+            ? $this->companyOfAction($attachable->id)
+            : $this->companyOfInitiative($attachable->id);
     }
 }

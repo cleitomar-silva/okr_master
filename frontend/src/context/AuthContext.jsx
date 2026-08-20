@@ -5,6 +5,8 @@ import { clearSession, getLoginAt, isSessionExpired, SESSION_DURATION, setSessio
 const AuthContext = createContext(null)
 
 const PERSISTED = 'okr_selected_company_id'
+const YEAR_KEY = 'okr_selected_year'
+const CURRENT_YEAR = new Date().getFullYear()
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
@@ -19,12 +21,23 @@ export function AuthProvider({ children }) {
     const id = localStorage.getItem(PERSISTED)
     return id ? Number(id) : null
   })
+  const [year, setYear] = useState(() => {
+    const y = Number(localStorage.getItem(YEAR_KEY))
+    return y || CURRENT_YEAR
+  })
 
   const isAdmin = user?.permission === 'admin'
 
   const selectCompany = useCallback((id) => {
     setCompany(id)
     localStorage.setItem(PERSISTED, String(id))
+  }, [])
+
+  const selectYear = useCallback((y) => {
+    const value = Number(y)
+    if (!value) return
+    setYear(value)
+    localStorage.setItem(YEAR_KEY, String(value))
   }, [])
 
   const selectInitialCompany = useCallback((u) => {
@@ -50,6 +63,8 @@ export function AuthProvider({ children }) {
     setSessionStart()
     setUser(data.data.user)
     selectInitialCompany(data.data.user)
+    setYear(CURRENT_YEAR)
+    localStorage.setItem(YEAR_KEY, String(CURRENT_YEAR))
     return data.data.user
   }, [selectInitialCompany])
 
@@ -62,6 +77,7 @@ export function AuthProvider({ children }) {
     clearSession()
     setUser(null)
     setCompany(null)
+    setYear(CURRENT_YEAR)
   }, [])
 
   const refreshUser = useCallback(
@@ -85,6 +101,7 @@ export function AuthProvider({ children }) {
       clearSession()
       setUser(null)
       setCompany(null)
+      setYear(CURRENT_YEAR)
       setLoading(false)
       return
     }
@@ -108,8 +125,8 @@ export function AuthProvider({ children }) {
   }, [selectInitialCompany, logout])
 
   const value = useMemo(
-    () => ({ user, company, loading, isAdmin, login, logout, selectCompany, refreshUser }),
-    [user, company, loading, isAdmin, login, logout, selectCompany, refreshUser],
+    () => ({ user, company, year, loading, isAdmin, login, logout, selectCompany, selectYear, refreshUser }),
+    [user, company, year, loading, isAdmin, login, logout, selectCompany, selectYear, refreshUser],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

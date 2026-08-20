@@ -14,13 +14,18 @@ function Avatar({ name, size = 'w-8 h-8' }) {
 }
 
 export default function TopBar({ onMenu }) {
-  const { user, company, selectCompany, logout } = useAuth()
+  const { user, company, year, selectCompany, selectYear, logout } = useAuth()
   const navigate = useNavigate()
   const [companies, setCompanies] = useState([])
   const [companyOpen, setCompanyOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
+  const [years, setYears] = useState([])
+  const [yearOpen, setYearOpen] = useState(false)
+  const [addingYear, setAddingYear] = useState(false)
+  const [newYear, setNewYear] = useState('')
   const menuRef = useRef(null)
+  const yearRef = useRef(null)
 
   useEffect(() => {
     api.get('/my-companies').then((res) => setCompanies(res.data.data.companies)).catch(() => {})
@@ -29,10 +34,45 @@ export default function TopBar({ onMenu }) {
   useEffect(() => {
     const handler = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false)
+      if (yearRef.current && !yearRef.current.contains(e.target)) {
+        setYearOpen(false)
+        setAddingYear(false)
+      }
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [])
+
+  const loadYears = async () => {
+    try {
+      const { data: res } = await api.get('/years')
+      setYears(res.data?.years ?? [])
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const toggleYears = () => {
+    if (!yearOpen) loadYears()
+    setYearOpen((v) => !v)
+    setAddingYear(false)
+    setNewYear('')
+  }
+
+  const addYear = async () => {
+    const y = Number(newYear)
+    if (!y || y < 2000 || y > 2100) return
+    try {
+      const { data: res } = await api.post('/years', { year: y })
+      setYears(res.data?.years ?? (Array.from(new Set([...years, y])).sort((a, b) => b - a)))
+      selectYear(y)
+      setNewYear('')
+      setAddingYear(false)
+      setYearOpen(false)
+    } catch {
+      /* ignore */
+    }
+  }
 
   const current = companies.find((c) => c.id === company) || user?.companies?.find((c) => c.id === company)
 
@@ -49,7 +89,7 @@ export default function TopBar({ onMenu }) {
         <span className="material-symbols-outlined">menu</span>
       </button>
 
-      <div className="flex-1 flex justify-center">
+      <div className="flex-1 flex justify-center items-center">
         <div className="relative">
           <button
             onClick={() => setCompanyOpen((v) => !v)}
@@ -82,6 +122,78 @@ export default function TopBar({ onMenu }) {
                   {c.name}
                 </button>
               ))}
+            </div>
+          )}
+        </div>
+
+        <div className="relative ml-2" ref={yearRef}>
+          <button
+            onClick={toggleYears}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-on-primary font-title-md text-title-md font-bold hover:bg-black/10 transition-colors"
+            title="Selecionar ano"
+          >
+            <span className="material-symbols-outlined text-lg">calendar_month</span>
+            {year}
+            <span className="material-symbols-outlined text-lg">expand_more</span>
+          </button>
+          {yearOpen && (
+            <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 min-w-[180px] bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg p-2 z-50">
+              <span className="block px-3 py-2 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+                Ano
+              </span>
+              {years.length === 0 && (
+                <span className="block px-3 py-2 text-sm text-on-surface-variant">Nenhum ano cadastrado.</span>
+              )}
+              {years.map((y) => (
+                <button
+                  key={y}
+                  onClick={() => {
+                    selectYear(y)
+                    setYearOpen(false)
+                  }}
+                  className={`w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-surface-container-high transition-colors ${
+                    y === year ? 'bg-surface-container-high font-semibold text-on-surface' : 'text-on-surface-variant'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-base">event</span>
+                  {y}
+                </button>
+              ))}
+              {addingYear ? (
+                <div className="flex items-center gap-1 px-1 pt-2 mt-1 border-t border-outline-variant/60">
+                  <input
+                    type="number"
+                    min="2000"
+                    max="2100"
+                    value={newYear}
+                    onChange={(e) => setNewYear(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        addYear()
+                      }
+                    }}
+                    placeholder="Ex: 2027"
+                    autoFocus
+                    className="flex-1 min-w-0 rounded-lg border border-outline-variant bg-surface-container-low px-2 py-1.5 text-sm text-on-surface focus:outline-none focus:border-[#0f639d]"
+                  />
+                  <button
+                    onClick={addYear}
+                    className="p-1.5 rounded-lg bg-[#0f639d] text-on-primary hover:bg-[#0c5182] transition-colors"
+                    title="Adicionar ano"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">add</span>
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setAddingYear(true)}
+                  className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-[#0f639d] hover:bg-surface-container-high transition-colors mt-1 border-t border-outline-variant/60"
+                >
+                  <span className="material-symbols-outlined text-base">add</span>
+                  Adicionar ano
+                </button>
+              )}
             </div>
           )}
         </div>

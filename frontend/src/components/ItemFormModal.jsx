@@ -42,21 +42,15 @@ const CONFIGS = {
   },
 }
 
-const ACCEPTED_MIME = [
-  'application/pdf',
-  'image/png',
-  'image/jpeg',
-  'image/gif',
-  'image/webp',
-  'image/bmp',
-  'application/vnd.ms-excel',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'text/csv',
-  'application/csv',
-]
+const ACCEPTED_EXTENSIONS = ['pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'xls', 'xlsx', 'csv']
 const MAX_FILE_SIZE = 50 * 1024 * 1024
 
-export default function ItemFormModal({ type, open, companyId, parentId, item, onClose, onSaved }) {
+const isAcceptedFile = (file) => {
+  const ext = (file.name?.split('.').pop() || '').toLowerCase()
+  return ACCEPTED_EXTENSIONS.includes(ext)
+}
+
+export default function ItemFormModal({ type, open, companyId, parentId, item, onClose, onSaved, isAdmin = false, year }) {
   const { toast } = useToast()
   const cfg = CONFIGS[type]
   const canAttach = type === 'acao' || type === 'iniciativa'
@@ -101,7 +95,7 @@ export default function ItemFormModal({ type, open, companyId, parentId, item, o
     const files = Array.from(e.target.files || [])
     e.target.value = ''
     if (files.length === 0) return
-    const invalid = files.filter((f) => !ACCEPTED_MIME.includes(f.type) || f.size > MAX_FILE_SIZE)
+    const invalid = files.filter((f) => !isAcceptedFile(f) || f.size > MAX_FILE_SIZE)
     if (invalid.length > 0) {
       setAttachmentsError('Apenas arquivos PDF, imagens e planilhas, com no máximo 50MB cada.')
       return
@@ -174,6 +168,7 @@ export default function ItemFormModal({ type, open, companyId, parentId, item, o
     setLoading(true)
     const payload = { name: name.trim() }
     if (parentId) payload[cfg.parentField] = parentId
+    if (type === 'eixo') payload.year = year
     if (cfg.fields.includes('users')) payload.user_ids = users
     try {
       const url = item ? `${cfg.api}/${item.id}` : cfg.api
@@ -338,14 +333,16 @@ export default function ItemFormModal({ type, open, companyId, parentId, item, o
                         <span className="material-symbols-outlined text-[20px]">file_download</span>
                       )}
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => setConfirmDelete(att)}
-                      className="p-1 rounded-lg text-on-surface-variant hover:text-error transition-colors"
-                      title="Excluir"
-                    >
-                      <span className="material-symbols-outlined text-[20px]">delete</span>
-                    </button>
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        onClick={() => setConfirmDelete(att)}
+                        className="p-1 rounded-lg text-on-surface-variant hover:text-error transition-colors"
+                        title="Excluir"
+                      >
+                        <span className="material-symbols-outlined text-[20px]">delete</span>
+                      </button>
+                    )}
                   </li>
                 ))}
               </ul>

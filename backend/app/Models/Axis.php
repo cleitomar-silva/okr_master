@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['company_id', 'name'])]
+#[Fillable(['company_id', 'year', 'name'])]
 class Axis extends Model
 {
     use SoftDeletes;

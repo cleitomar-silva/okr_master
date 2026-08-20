@@ -21,5 +21,6 @@ export function clearSession() {
   localStorage.removeItem(TOKEN_KEY)
   localStorage.removeItem(USER_KEY)
   localStorage.removeItem(COMPANY_KEY)
+  localStorage.removeItem(YEAR_KEY)
   localStorage.removeItem(SESSION_KEY)
 }

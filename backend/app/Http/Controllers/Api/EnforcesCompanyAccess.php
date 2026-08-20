@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\Action;
 use App\Models\Attachment;
 use App\Models\Axis;
+use App\Models\FollowUp;
 use App\Models\Initiative;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -58,6 +59,15 @@ trait EnforcesCompanyAccess
             ->join('actions', 'actions.objective_id', '=', 'objectives.id')
             ->join('initiatives', 'initiatives.action_id', '=', 'actions.id')
             ->where('initiatives.id', $initiativeId)->value('axes.company_id');
+    }
+
+    protected function companyOfFollowUp(int $followUpId): int
+    {
+        $followUp = FollowUp::whereKey($followUpId)->firstOrFail();
+
+        return $followUp->followupable_type === Action::class
+            ? $this->companyOfAction($followUp->followupable_id)
+            : $this->companyOfInitiative($followUp->followupable_id);
     }
 
     protected function assertAdmin(Request $request): void
@@ -117,6 +127,17 @@ trait EnforcesCompanyAccess
             'users' => $initiative->users->map(fn (User $u) => $this->serializeUser($u)),
             'attachments' => $initiative->attachments->map(fn (Attachment $a) => $this->attachmentData($a))->values(),
             'mine' => $initiative->users->contains('id', $user->id),
+        ];
+    }
+
+    protected function followUpData(FollowUp $followUp): array
+    {
+        return [
+            'id' => $followUp->id,
+            'meeting_at' => $followUp->meeting_at?->toIso8601String(),
+            'minutes' => $followUp->minutes,
+            'users' => $followUp->users->map(fn (User $u) => $this->serializeUser($u))->values(),
+            'attachments' => $followUp->attachments->map(fn (Attachment $a) => $this->attachmentData($a))->values(),
         ];
     }
 }

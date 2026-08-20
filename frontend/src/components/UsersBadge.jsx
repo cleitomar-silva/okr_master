@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 
 const AVATAR_COLORS = ['bg-primary-container', 'bg-secondary-container', 'bg-tertiary-container', 'bg-surface-container-highest']
 
-function UsersBadge({ users = [] }) {
+function UsersBadge({ users = [], label = 'Responsáveis' }) {
   const [open, setOpen] = useState(false)
   const btnRef = useRef(null)
   if (!users || users.length === 0) return null
@@ -65,7 +65,7 @@ function UsersBadge({ users = [] }) {
             onMouseDown={(e) => e.stopPropagation()}
           >
             <span className="block font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-2">
-              Responsáveis
+              {label}
             </span>
             <div className="flex flex-col gap-1.5 overflow-y-auto" style={{ maxHeight: pos.listMaxH }}>
               {users.map((u) => (
