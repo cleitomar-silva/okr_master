@@ -57,6 +57,32 @@ class AxisController extends Controller
         return response()->json(['status' => 'ok', 'data' => ['axis' => $axis->fresh()]]);
     }
 
+    public function transferYear(Request $request, Axis $axis): JsonResponse
+    {
+        $this->assertCanEditOkr($request);
+        $this->assertCompanyAccess($request, $this->companyOfAxis($axis->id));
+
+        $validated = $request->validate([
+            'year' => 'required|integer|between:2000,2100',
+        ]);
+
+        if ((int) $validated['year'] === (int) $axis->year) {
+            return response()->json([
+                'status' => 'ok',
+                'data' => ['axis' => $axis->fresh(), 'message' => 'O eixo já está neste ano.'],
+            ]);
+        }
+
+        Year::firstOrCreate(['year' => $validated['year']]);
+
+        $axis->update(['year' => $validated['year']]);
+
+        return response()->json([
+            'status' => 'ok',
+            'data' => ['axis' => $axis->fresh()],
+        ]);
+    }
+
     public function destroy(Request $request, Axis $axis): JsonResponse
     {
         $this->assertCanDeleteOkr($request);

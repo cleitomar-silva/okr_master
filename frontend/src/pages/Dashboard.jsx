@@ -7,6 +7,7 @@ import ItemFormModal from '../components/ItemFormModal'
 import AttachmentPopover from '../components/AttachmentPopover'
 import ConfirmDialog from '../components/ConfirmDialog'
 import FollowUpModal from '../components/FollowUpModal'
+import TransferYearPopover from '../components/TransferYearPopover'
 import { useToast } from '../components/Toast'
 
 function SelectFilter({ value, onChange, options, placeholder }) {
@@ -103,7 +104,7 @@ const ActionRow = memo(function ActionRow({ action, canEdit, isAdmin, onForm, on
               <button
                 onClick={() => onForm('acao', null, { id: action.id, name: action.name, users: action.users, attachments: action.attachments })}
                 className="p-1 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-colors"
-                title="Editar Ação"
+                title="Editar Key Result"
               >
                 <span className="material-symbols-outlined text-[20px]">edit</span>
               </button>
@@ -111,10 +112,10 @@ const ActionRow = memo(function ActionRow({ action, canEdit, isAdmin, onForm, on
             {isAdmin && (
               <button
                 onClick={() =>
-                  onDelete('acao', { id: action.id, name: action.name }, `Esta Ação possui ${action.initiatives?.length || 0} Iniciativa(s).`)
+                  onDelete('acao', { id: action.id, name: action.name }, `Este Key Result possui ${action.initiatives?.length || 0} Iniciativa(s).`)
                 }
                 className="p-1 hover:bg-error-container rounded-lg text-on-surface-variant hover:text-error transition-colors"
-                title="Excluir Ação"
+                title="Excluir Key Result"
               >
                 <span className="material-symbols-outlined text-[20px]">delete</span>
               </button>
@@ -234,7 +235,7 @@ const ObjectiveBlock = memo(function ObjectiveBlock({ objective, objIndex, canEd
             <button
               onClick={() => onForm('acao', objective.id, null)}
               className="p-1.5 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-colors"
-              title="Cadastrar Ação"
+              title="Cadastrar Key Result"
             >
               <span className="material-symbols-outlined text-[20px]">add</span>
             </button>
@@ -250,7 +251,7 @@ const ObjectiveBlock = memo(function ObjectiveBlock({ objective, objIndex, canEd
             {isAdmin && (
               <button
                 onClick={() =>
-                  onDelete('objetivo', { id: objective.id, name: objective.name }, `Este Objetivo possui ${objective.actions.length} Ação(ões).`)
+                  onDelete('objetivo', { id: objective.id, name: objective.name }, `Este Objetivo possui ${objective.actions.length} Key Result(s).`)
                 }
                 className="p-1.5 hover:bg-error-container rounded-lg text-on-surface-variant hover:text-error transition-colors"
                 title="Excluir Objetivo"
@@ -282,14 +283,14 @@ const ObjectiveBlock = memo(function ObjectiveBlock({ objective, objIndex, canEd
         <div className="p-6">
           <EmptyState
             icon="task_alt"
-            title="Nenhuma Ação cadastrada"
-            description="Crie a primeira Ação deste Objetivo para começar a acompanhar o progresso."
+            title="Nenhum Key Result cadastrado"
+            description="Crie o primeiro Key Result deste Objetivo para começar a acompanhar o progresso."
             action={
               <button
                 onClick={() => onForm('acao', objective.id, null)}
                 className="mt-2 px-4 py-2 rounded-lg bg-[#0f639d] text-on-primary text-sm font-medium hover:bg-[#0c5182] transition-colors flex items-center gap-2"
               >
-                <span className="material-symbols-outlined text-[20px]">add</span> Cadastrar Ação
+                <span className="material-symbols-outlined text-[20px]">add</span> Cadastrar Key Result
               </button>
             }
           />
@@ -301,7 +302,7 @@ const ObjectiveBlock = memo(function ObjectiveBlock({ objective, objIndex, canEd
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface-container-lowest border-b border-outline-variant">
-                <th className="p-4 font-label-sm text-label-sm text-on-surface-variant font-medium">Ação (Key Result)</th>
+                <th className="p-4 font-label-sm text-label-sm text-on-surface-variant font-medium">Key Result</th>
                 <th className="p-4 font-label-sm text-label-sm text-on-surface-variant font-medium w-40">Progresso</th>
                 <th className="p-4 font-label-sm text-label-sm text-on-surface-variant font-medium w-48">Equipe</th>
                 <th className="p-4 font-label-sm text-label-sm text-on-surface-variant font-medium w-44 text-right">Ações</th>
@@ -330,7 +331,7 @@ const ObjectiveBlock = memo(function ObjectiveBlock({ objective, objIndex, canEd
   )
 })
 
-const AxisBlock = memo(function AxisBlock({ axis, canEdit, isAdmin, expanded, onToggle, onForm, onDelete, onFollowUp, onToggleInitiative, onToggleAction, togglingId }) {
+const AxisBlock = memo(function AxisBlock({ axis, canEdit, isAdmin, expanded, onToggle, onForm, onDelete, onTransfer, onFollowUp, onToggleInitiative, onToggleAction, togglingId }) {
   const axisOpen = expanded.has(`axis-${axis.id}`)
   const axisProgress =
     axis.objectives.length > 0
@@ -367,13 +368,22 @@ const AxisBlock = memo(function AxisBlock({ axis, canEdit, isAdmin, expanded, on
               <span className="material-symbols-outlined text-[20px]">add</span>
             </button>
             {canEdit && (
-              <button
-                onClick={() => onForm('eixo', null, { id: axis.id, name: axis.name })}
-                className="p-2 hover:bg-surface-container-high rounded-lg transition-colors text-on-surface-variant"
-                title="Editar Eixo"
-              >
-                <span className="material-symbols-outlined text-[20px]">edit</span>
-              </button>
+              <>
+                <button
+                  onClick={() => onTransfer(axis)}
+                  className="p-2 hover:bg-surface-container-high rounded-lg transition-colors text-on-surface-variant"
+                  title="Transferir Eixo para outro ano"
+                >
+                  <span className="material-symbols-outlined text-[20px]">swap_horiz</span>
+                </button>
+                <button
+                  onClick={() => onForm('eixo', null, { id: axis.id, name: axis.name })}
+                  className="p-2 hover:bg-surface-container-high rounded-lg transition-colors text-on-surface-variant"
+                  title="Editar Eixo"
+                >
+                  <span className="material-symbols-outlined text-[20px]">edit</span>
+                </button>
+              </>
             )}
             {isAdmin && (
               <button
@@ -454,6 +464,7 @@ export default function Dashboard() {
   const [confirm, setConfirm] = useState(null)
   const [deleting, setDeleting] = useState(false)
   const [togglingId, setTogglingId] = useState(null)
+  const [transferAxis, setTransferAxis] = useState(null)
   const initializedRef = useRef(false)
   const knownKeysRef = useRef(new Set())
 
@@ -616,7 +627,7 @@ export default function Dashboard() {
             options={filterData.objectives}
           />
           <SelectFilter
-            label="Ação"
+            label="Key Result"
             placeholder="Ações"
             value={filters.action_id}
             onChange={(v) => setFilters((f) => ({ ...f, action_id: v }))}
@@ -663,6 +674,7 @@ export default function Dashboard() {
             onToggle={toggleExpand}
             onForm={openForm}
             onDelete={requestDelete}
+            onTransfer={setTransferAxis}
             onFollowUp={openFollowUp}
             onToggleInitiative={toggleInitiative}
             onToggleAction={toggleAction}
@@ -696,6 +708,13 @@ export default function Dashboard() {
           onClose={() => setFollowUp(null)}
         />
       )}
+
+      <TransferYearPopover
+        axis={transferAxis}
+        open={!!transferAxis}
+        onClose={() => setTransferAxis(null)}
+        onTransferred={loadDashboard}
+      />
 
       {confirm && (
         <ConfirmDialog

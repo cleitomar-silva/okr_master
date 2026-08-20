@@ -32,6 +32,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('companies', CompanyController::class);
 
         Route::apiResource('axes', AxisController::class)->except(['show'])->parameters(['axes' => 'axis']);
+        Route::patch('axes/{axis}/year', [AxisController::class, 'transferYear']);
         Route::apiResource('objectives', ObjectiveController::class)->except(['show']);
         Route::apiResource('actions', ActionController::class)->except(['show']);
         Route::patch('actions/{action}/toggle', [ActionController::class, 'toggle']);

@@ -23,9 +23,9 @@ const CONFIGS = {
     icon: 'flag',
   },
   acao: {
-    title: 'Ação',
+    title: 'Key Result',
     fields: ['name', 'users'],
-    label: 'Nome da Ação',
+    label: 'Nome do Key Result',
     parentField: 'objective_id',
     api: '/actions',
     icon: 'task_alt',

@@ -46,7 +46,7 @@ class DashboardController extends Controller
         $mappedInitiatives = [];
 
         foreach ($axes as $axis) {
-            $node = ['id' => $axis->id, 'name' => $axis->name, 'objectives' => []];
+            $node = ['id' => $axis->id, 'year' => $axis->year, 'name' => $axis->name, 'objectives' => []];
 
             foreach ($axis->objectives as $objective) {
                 if ($request->filled('objective_id') && $objective->id != $request->integer('objective_id')) {
