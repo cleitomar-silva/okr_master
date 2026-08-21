@@ -223,8 +223,12 @@ export default function TopBar({ onMenu }) {
               onClick={async () => {
                 setMenuOpen(false)
                 setLoggingOut(true)
-                await logout()
-                setLoggingOut(false)
+                try {
+                  await logout()
+                } finally {
+                  setLoggingOut(false)
+                  navigate('/login', { replace: true })
+                }
               }}
               disabled={loggingOut}
               className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-error hover:bg-error-container transition-colors disabled:opacity-60 disabled:cursor-not-allowed"

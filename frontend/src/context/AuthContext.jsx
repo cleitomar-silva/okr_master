@@ -1,11 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import api from '../api'
-import { clearSession, getLoginAt, isSessionExpired, SESSION_DURATION, setSessionStart } from '../session'
+import { clearSession, getLoginAt, isSessionExpired, SESSION_DURATION, setSessionStart, YEAR_KEY } from '../session'
 
 const AuthContext = createContext(null)
 
 const PERSISTED = 'okr_selected_company_id'
-const YEAR_KEY = 'okr_selected_year'
 const CURRENT_YEAR = new Date().getFullYear()
 
 export function AuthProvider({ children }) {

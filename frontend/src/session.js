@@ -3,6 +3,7 @@ export const SESSION_KEY = 'okr_login_at'
 export const TOKEN_KEY = 'okr_token'
 export const USER_KEY = 'okr_user'
 export const COMPANY_KEY = 'okr_selected_company_id'
+export const YEAR_KEY = 'okr_selected_year'
 
 export function getLoginAt() {
   return Number(localStorage.getItem(SESSION_KEY) || 0)
