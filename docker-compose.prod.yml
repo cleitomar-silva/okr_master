@@ -48,13 +48,18 @@ services:
       APP_ENV: production
       APP_DEBUG: "false"
       APP_URL: ${APP_URL:-http://localhost}
-      APP_KEY: ${APP_KEY:-base64:XH3FLZYcsCcyPhwjFQFTCfuopkhqBy8aHNfIeZpyoAM=}
+      APP_KEY: ${APP_KEY}
       DB_CONNECTION: mysql
       DB_HOST: mysql
       DB_PORT: 3306
       DB_DATABASE: okr_master
       DB_USERNAME: okr
       DB_PASSWORD: "${DB_PASSWORD:-C@f@z!2023*#_bd!}"
+      MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID}
+      MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET}
+      MICROSOFT_TENANT_ID: ${MICROSOFT_TENANT_ID}
+      MICROSOFT_REDIRECT_URI: ${MICROSOFT_REDIRECT_URI:-https://okrcafaz.cafazonline.org.br/api/v1/auth/microsoft/callback}
+      FRONTEND_URL: ${FRONTEND_URL:-https://okrcafaz.cafazonline.org.br/}
     volumes:
       - okr_storage:/app/storage
     networks: [app]

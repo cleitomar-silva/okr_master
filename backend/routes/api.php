@@ -8,12 +8,15 @@ use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\FollowUpController;
 use App\Http\Controllers\Api\InitiativeController;
+use App\Http\Controllers\Api\MicrosoftAuthController;
 use App\Http\Controllers\Api\ObjectiveController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
     Route::post('login', [AuthController::class, 'login'])->name('api.login');
+    Route::get('auth/microsoft/redirect', [MicrosoftAuthController::class, 'redirect'])->name('api.auth.microsoft.redirect');
+    Route::get('auth/microsoft/callback', [MicrosoftAuthController::class, 'callback'])->name('api.auth.microsoft.callback');
 
     Route::middleware(['auth:sanctum', 'user.active'])->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);

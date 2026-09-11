@@ -67,6 +67,18 @@ export function AuthProvider({ children }) {
     return data.data.user
   }, [selectInitialCompany])
 
+  const loginWithToken = useCallback(async (token) => {
+    localStorage.setItem('okr_token', token)
+    setSessionStart()
+    const { data } = await api.get('/me')
+    localStorage.setItem('okr_user', JSON.stringify(data.data.user))
+    setUser(data.data.user)
+    selectInitialCompany(data.data.user)
+    setYear(CURRENT_YEAR)
+    localStorage.setItem(YEAR_KEY, String(CURRENT_YEAR))
+    return data.data.user
+  }, [selectInitialCompany])
+
   const logout = useCallback(async () => {
     try {
       await api.post('/logout')
@@ -124,8 +136,8 @@ export function AuthProvider({ children }) {
   }, [selectInitialCompany, logout])
 
   const value = useMemo(
-    () => ({ user, company, year, loading, isAdmin, login, logout, selectCompany, selectYear, refreshUser }),
-    [user, company, year, loading, isAdmin, login, logout, selectCompany, selectYear, refreshUser],
+    () => ({ user, company, year, loading, isAdmin, login, loginWithToken, logout, selectCompany, selectYear, refreshUser }),
+    [user, company, year, loading, isAdmin, login, loginWithToken, logout, selectCompany, selectYear, refreshUser],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
