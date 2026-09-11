@@ -8,6 +8,7 @@ import AttachmentPopover from '../components/AttachmentPopover'
 import ConfirmDialog from '../components/ConfirmDialog'
 import FollowUpModal from '../components/FollowUpModal'
 import TransferYearPopover from '../components/TransferYearPopover'
+import ExportModal from '../components/ExportModal'
 import { useToast } from '../components/Toast'
 
 function SelectFilter({ value, onChange, options, placeholder }) {
@@ -465,6 +466,7 @@ export default function Dashboard() {
   const [deleting, setDeleting] = useState(false)
   const [togglingId, setTogglingId] = useState(null)
   const [transferAxis, setTransferAxis] = useState(null)
+  const [exportOpen, setExportOpen] = useState(false)
   const initializedRef = useRef(false)
   const knownKeysRef = useRef(new Set())
 
@@ -643,6 +645,13 @@ export default function Dashboard() {
           >
             <span className="material-symbols-outlined text-[20px]">person</span> Meus Itens
           </button>
+          <button
+            onClick={() => setExportOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#0f639d]/30 text-[#0f639d] hover:bg-[#0f639d]/10 text-sm font-medium transition-colors"
+            title="Exportar dados"
+          >
+            <span className="material-symbols-outlined text-[20px]">ios_share</span> Exportar
+          </button>
         </div>
       </div>
 
@@ -714,6 +723,14 @@ export default function Dashboard() {
         open={!!transferAxis}
         onClose={() => setTransferAxis(null)}
         onTransferred={loadDashboard}
+      />
+
+      <ExportModal
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
+        axes={data?.axes}
+        companyName={user?.companies?.find((c) => c.id === company)?.name || ''}
+        year={year}
       />
 
       {confirm && (

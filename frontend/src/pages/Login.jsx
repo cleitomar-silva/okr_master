@@ -7,7 +7,7 @@ export default function Login() {
   const { user, login } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
-  const [email, setEmail] = useState('admin@cafaz.com')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
