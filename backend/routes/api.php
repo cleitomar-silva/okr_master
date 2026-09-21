@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\ActionController;
 use App\Http\Controllers\Api\AttachmentController;
+use App\Http\Controllers\Api\AuditLogController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AxisController;
 use App\Http\Controllers\Api\CompanyController;
@@ -48,5 +49,8 @@ Route::prefix('v1')->group(function () {
 
         Route::get('follow-ups', [FollowUpController::class, 'index']);
         Route::post('follow-ups', [FollowUpController::class, 'store']);
+
+        Route::get('audit-logs', [AuditLogController::class, 'index']);
+        Route::get('audit-logs/verify', [AuditLogController::class, 'verify']);
     });
 });

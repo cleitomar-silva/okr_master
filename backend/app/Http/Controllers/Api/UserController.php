@@ -74,10 +74,13 @@ class UserController extends Controller
             unset($validated['password']);
         }
 
+        $beforeCompanyIds = $user->companies()->pluck('companies.id')->all();
+
         $user->update($validated);
 
         if (array_key_exists('company_ids', $validated)) {
             $user->companies()->sync($validated['company_ids']);
+            $user->recordAuditRelationChange($beforeCompanyIds, $validated['company_ids'], 'empresas');
         }
 
         return response()->json(['status' => 'ok', 'data' => ['user' => $this->serialize($user->fresh('companies:id,name,color'))]]);

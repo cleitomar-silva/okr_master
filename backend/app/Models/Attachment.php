@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 #[Fillable(['attachable_type', 'attachable_id', 'name', 'mime_type', 'size', 'data'])]
 class Attachment extends Model
 {
+    use Auditable;
+
     public function attachable(): MorphTo
     {
         return $this->morphTo();

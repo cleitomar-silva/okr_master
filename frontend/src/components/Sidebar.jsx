@@ -70,6 +70,7 @@ function Menu({ collapsed, onToggle, onClose }) {
           <>
             <Item to="/users" icon="group" label="Usuários" collapsed={collapsed} />
             <Item to="/companies" icon="business" label="Empresas" collapsed={collapsed} />
+            <Item to="/auditoria" icon="fact_check" label="Auditoria" collapsed={collapsed} />
           </>
         )}
       </nav>

@@ -55,10 +55,13 @@ class InitiativeController extends Controller
             'user_ids.*' => 'integer|exists:users,id',
         ]);
 
+        $beforeUserIds = $initiative->users()->pluck('users.id')->all();
+
         $initiative->update($validated);
 
         if (array_key_exists('user_ids', $validated)) {
             $initiative->users()->sync($validated['user_ids']);
+            $initiative->recordAuditRelationChange($beforeUserIds, $validated['user_ids'], 'responsaveis');
         }
 
         return response()->json(['status' => 'ok', 'data' => ['initiative' => $initiative->fresh('users:id,name')]]);

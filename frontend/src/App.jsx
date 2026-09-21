@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard'
 import Users from './pages/Users'
 import UserForm from './pages/UserForm'
 import Companies from './pages/Companies'
+import AuditLogs from './pages/AuditLogs'
 import Perfil from './pages/Perfil'
 
 function RequireAuth({ children }) {
@@ -88,6 +89,16 @@ function App() {
                   <RequireAdmin>
                     <ErrorBoundary>
                       <Companies />
+                    </ErrorBoundary>
+                  </RequireAdmin>
+                }
+              />
+              <Route
+                path="auditoria"
+                element={
+                  <RequireAdmin>
+                    <ErrorBoundary>
+                      <AuditLogs />
                     </ErrorBoundary>
                   </RequireAdmin>
                 }

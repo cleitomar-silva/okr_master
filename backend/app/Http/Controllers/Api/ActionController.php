@@ -55,8 +55,12 @@ class ActionController extends Controller
             'user_ids.*' => 'integer|exists:users,id',
         ]);
 
+        $beforeUserIds = $action->users()->pluck('users.id')->all();
+
         $action->update($validated);
         $action->users()->sync($validated['user_ids']);
+
+        $action->recordAuditRelationChange($beforeUserIds, $validated['user_ids'], 'responsaveis');
 
         return response()->json(['status' => 'ok', 'data' => ['action' => $this->serialize($action->fresh('users:id,name', 'initiatives'))]]);
     }
